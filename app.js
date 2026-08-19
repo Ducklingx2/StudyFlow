@@ -173,7 +173,7 @@ function setupRefreshButtons() {
                 await loadTasks();
 
                 tasksButton.disabled = false;
-
+t
             }
         );
 
@@ -761,49 +761,277 @@ function setupPlanner() {
 async function generatePlan() {
 
     const button =
-        document.getElementById(
-            "generate-plan"
-        );
+        document.getElementById("generate-plan");
 
     const result =
-        document.getElementById(
-            "planner-result"
-        );
+        document.getElementById("planner-result");
 
     const output =
-        document.getElementById(
-            "planner-output"
-        );
+        document.getElementById("planner-output");
+
+
+    // ==========================================
+    // READ FORM VALUES
+    // ==========================================
 
     const subjects =
-        document.getElementById(
-            "subjects"
-        ).value.trim();
+        document.getElementById("subjects").value.trim();
 
     const upcomingTests =
-        document.getElementById(
-            "upcoming-tests"
-        ).value.trim();
+        document.getElementById("upcoming-tests").value.trim();
 
     const availableStudyTime =
         Number(
-            document.getElementById(
-                "available-study-time"
-            ).value
+            document.getElementById("available-study-time").value
         );
-
-    const difficultTopics =
-        document.getElementById(
-            "difficult-topics"
-        ).value.trim();
 
     const breakInterval =
         Number(
-            document.getElementById(
-                "break-interval"
-            ).value
+            document.getElementById("break-interval").value
         );
 
+    const difficultTopics =
+        document.getElementById("difficult-topics").value.trim();
+
+
+    // ==========================================
+    // VALIDATION
+    // ==========================================
+
+    if (!subjects) {
+        showToast("Enter your subjects.");
+        return;
+    }
+
+    if (!upcomingTests) {
+        showToast("Enter your upcoming tests.");
+        return;
+    }
+
+    if (!availableStudyTime || availableStudyTime <= 0) {
+        showToast("Enter your available study time.");
+        return;
+    }
+
+    if (!breakInterval || breakInterval < 5) {
+        showToast(
+            "Enter a break interval of at least 5 minutes."
+        );
+        return;
+    }
+
+
+    // ==========================================
+    // LOADING STATE
+    // ==========================================
+
+    button.disabled = true;
+    button.textContent = "🧠 Creating plan...";
+
+    result.classList.remove("hidden");
+
+    output.textContent =
+        "Creating your study plan...";
+
+
+    // ==========================================
+    // PAYLOAD
+    // ==========================================
+
+    const payload = {
+
+        subjects: subjects,
+
+        upcoming_tests: upcomingTests,
+
+        available_study_time: availableStudyTime,
+
+        difficult_topics: difficultTopics,
+
+        break_interval: breakInterval
+
+    };
+
+
+    console.log(
+        "Sending StudyFlow data:",
+        payload
+    );
+
+
+    try {
+
+        // ==========================================
+        // SEND TO n8n
+        // ==========================================
+
+        const response =
+            await fetch(
+                API.createPlan,
+                {
+                    method: "POST",
+
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+
+                    body: JSON.stringify(payload)
+                }
+            );
+
+
+        if (!response.ok) {
+
+            throw new Error(
+                `n8n returned HTTP ${response.status}`
+            );
+
+        }
+
+
+        // ==========================================
+        // READ RESPONSE
+        // ==========================================
+
+        const data =
+            await response.json();
+
+
+        console.log(
+            "StudyFlow n8n response:",
+            data
+        );
+
+
+        // ==========================================
+        // EXTRACT AI OUTPUT
+        // ==========================================
+
+        let aiOutput = "";
+
+
+        /*
+         * n8n commonly returns:
+         *
+         * [
+         *   {
+         *      "output": "..."
+         *   }
+         * ]
+         */
+
+
+        if (Array.isArray(data)) {
+
+            if (data.length > 0) {
+
+                const firstItem =
+                    data[0];
+
+
+                aiOutput =
+                    firstItem.output ??
+                    firstItem.answer ??
+                    firstItem.message ??
+                    firstItem.response ??
+                    "";
+
+            }
+
+        }
+
+
+        /*
+         * n8n can also return:
+         *
+         * {
+         *     "output": "..."
+         * }
+         */
+
+        else if (
+            typeof data === "object" &&
+            data !== null
+        ) {
+
+            aiOutput =
+                data.output ??
+                data.answer ??
+                data.message ??
+                data.response ??
+                "";
+
+        }
+
+
+        // ==========================================
+        // HANDLE EMPTY RESPONSE
+        // ==========================================
+
+        if (!aiOutput) {
+
+            console.error(
+                "Unexpected n8n response:",
+                data
+            );
+
+            throw new Error(
+                "n8n returned no study plan."
+            );
+
+        }
+
+
+        // ==========================================
+        // DISPLAY PLAN
+        // ==========================================
+
+        output.textContent =
+            String(aiOutput);
+
+
+        showToast(
+            "Study plan created! 🎉"
+        );
+
+
+        // ==========================================
+        // REFRESH TASKS
+        // ==========================================
+
+        await loadTasks();
+
+    }
+
+
+    catch (error) {
+
+        console.error(
+            "StudyFlow planner error:",
+            error
+        );
+
+
+        output.textContent =
+            "The study plan could not be created.";
+
+        showToast(
+            "Study planner failed."
+        );
+
+    }
+
+
+    finally {
+
+        button.disabled = false;
+
+        button.textContent =
+            "🧠 Generate Study Plan";
+
+    }
+
+}
 
     /* =====================================================
        VALIDATION
