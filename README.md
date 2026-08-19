@@ -1,8 +1,8 @@
-# 📚 StudyFlow
+# ⭕ Velora AI
 
 ### AI Study Planner for people who have discovered that "I'll remember it" is not, in fact, a reliable scheduling system.
 
-StudyFlow is an AI-powered study planning dashboard that takes your subjects, upcoming tests, available study time, and difficult topics, then turns them into an actual study plan.
+Velora is an AI-powered study planning dashboard that takes your subjects, upcoming tests, available study time, and difficult topics, then turns them into an actual study plan.
 
 It uses **n8n + AI** behind the scenes to generate tasks and keep track of whether you've actually done them.
 
@@ -12,7 +12,7 @@ Because apparently we need software to tell us to study.
 
 ### 🧠 AI Study Planner
 
-Tell StudyFlow:
+Tell Velora:
 
 - What you're studying
 - What tests are coming up
@@ -20,7 +20,7 @@ Tell StudyFlow:
 - How often you need breaks
 - Which topics are causing you emotional damage
 
-StudyFlow sends this information to an AI workflow, which creates a study plan and generates tasks.
+Velora sends this information to an AI workflow, which creates a study plan and generates tasks.
 
 ---
 
@@ -53,7 +53,7 @@ you get actual numbers.
 ## 📁 Project Structure
 
 ```text
-StudyFlow/
+Velora/
 ├── index.html
 ├── style.css
 ├── app.js
