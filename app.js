@@ -1,1123 +1,1120 @@
-/*
-    STUDYFLOW FRONTEND
-
-    Connected to n8n.
-
-    Flow:
-
-    StudyFlow UI
-        ↓
-    n8n Webhook
-        ↓
-    Study Plan Generator
-        ↓
-    Respond to Webhook
-        ↓
-    StudyFlow UI
-*/
+/* =========================================================
+   STUDYFLOW
+   Frontend ↔ n8n
+========================================================= */
 
 
-// ==========================================
-// N8N WEBHOOK
-// ==========================================
+/* =========================================================
+   n8n CONFIGURATION
+========================================================= */
 
-const N8N_WEBHOOK_URL =
-    "https://n8n2177819934.app.n8n.cloud/webhook/study-planner";
+const N8N_BASE_URL =
+    "https://n8n2177819934.app.n8n.cloud";
 
 
-// ==========================================
-// FALLBACK / DEMO AI OUTPUT
-// ==========================================
+const API = {
 
-let studyPlan = {
+    createPlan:
+        `${N8N_BASE_URL}/webhook/study-planner`,
 
-    answer:
-        "Focus on active practice, worked examples, timed problems and error correction.",
+    getTasks:
+        `${N8N_BASE_URL}/webhook/study-tasks`,
 
-    timetable: [
-
-        {
-            start: "17:00",
-            end: "17:45",
-            duration: 45,
-            type: "study",
-            subject: "Maths",
-            topic: "Differentiation",
-            task:
-                "Deep concept review and worked examples. Review derivative rules and solve three worked examples."
-        },
-
-        {
-            start: "17:45",
-            end: "17:55",
-            duration: 10,
-            type: "break",
-            subject: "",
-            topic: "Break",
-            task: "Take a break."
-        },
-
-        {
-            start: "17:55",
-            end: "18:40",
-            duration: 45,
-            type: "study",
-            subject: "Maths",
-            topic: "Differentiation Practice",
-            task:
-                "Complete 6–8 timed problems and immediately correct mistakes."
-        },
-
-        {
-            start: "18:40",
-            end: "18:50",
-            duration: 10,
-            type: "break",
-            subject: "",
-            topic: "Break",
-            task: "Take a break."
-        },
-
-        {
-            start: "18:50",
-            end: "19:00",
-            duration: 10,
-            type: "revision",
-            subject: "Maths",
-            topic: "Final Self-Test",
-            task:
-                "Recall the derivative rules from memory and solve one mixed problem."
-        }
-
-    ],
-
-    sleep_reminder: {
-        enabled: true,
-        time: "22:00"
-    }
+    completeTask:
+        `${N8N_BASE_URL}/webhook/complete-task`
 
 };
 
 
-// ==========================================
-// PAGE NAVIGATION
-// ==========================================
+/* =========================================================
+   APPLICATION STATE
+========================================================= */
 
-const pages = document.querySelectorAll(".page");
+let tasks = [];
 
-const navItems = document.querySelectorAll(
-    ".nav-item, .mobile-nav-item"
+
+/* =========================================================
+   START APPLICATION
+========================================================= */
+
+document.addEventListener(
+    "DOMContentLoaded",
+    () => {
+
+        setupNavigation();
+
+        setupPlanner();
+
+        setupRefreshButtons();
+
+        loadTasks();
+
+    }
 );
 
 
-function showPage(pageName) {
+/* =========================================================
+   NAVIGATION
+========================================================= */
 
-    pages.forEach(page => {
+function setupNavigation() {
 
-        page.classList.toggle(
-            "active",
-            page.id === pageName
+    const buttons =
+        document.querySelectorAll(
+            ".nav-button"
         );
 
-    });
 
-
-    navItems.forEach(item => {
-
-        item.classList.toggle(
-            "active",
-            item.dataset.page === pageName
+    const pages =
+        document.querySelectorAll(
+            ".page"
         );
 
-    });
+
+    buttons.forEach(button => {
+
+        button.addEventListener(
+            "click",
+            () => {
+
+                const pageName =
+                    button.dataset.page;
 
 
-    window.scrollTo({
-        top: 0,
-        behavior: "smooth"
+                /* Remove active from buttons */
+
+                buttons.forEach(btn => {
+
+                    btn.classList.remove(
+                        "active"
+                    );
+
+                });
+
+
+                /* Activate clicked button */
+
+                button.classList.add(
+                    "active"
+                );
+
+
+                /* Hide every page */
+
+                pages.forEach(page => {
+
+                    page.classList.remove(
+                        "active"
+                    );
+
+                });
+
+
+                /* Show selected page */
+
+                const page =
+                    document.getElementById(
+                        `${pageName}-page`
+                    );
+
+
+                if (page) {
+
+                    page.classList.add(
+                        "active"
+                    );
+
+                }
+
+
+                /* Refresh data when opening these */
+
+                if (
+                    pageName === "dashboard" ||
+                    pageName === "tasks"
+                ) {
+
+                    loadTasks();
+
+                }
+
+            }
+        );
+
     });
 
 }
 
 
-navItems.forEach(item => {
+/* =========================================================
+   REFRESH BUTTONS
+========================================================= */
 
-    item.addEventListener("click", () => {
+function setupRefreshButtons() {
 
-        showPage(item.dataset.page);
-
-    });
-
-});
-
-
-document
-    .querySelectorAll("[data-page-target]")
-    .forEach(button => {
-
-        button.addEventListener("click", () => {
-
-            showPage(
-                button.dataset.pageTarget
-            );
-
-        });
-
-    });
+    const dashboardButton =
+        document.getElementById(
+            "refresh-dashboard"
+        );
 
 
-// ==========================================
-// TIMELINE ICONS
-// ==========================================
+    const tasksButton =
+        document.getElementById(
+            "refresh-tasks"
+        );
 
-function getTypeIcon(type) {
 
-    switch (type) {
+    if (dashboardButton) {
 
-        case "study":
-            return "📚";
+        dashboardButton.addEventListener(
+            "click",
+            loadTasks
+        );
 
-        case "break":
-            return "☕";
+    }
 
-        case "test":
-            return "📝";
 
-        case "revision":
-            return "🧠";
+    if (tasksButton) {
 
-        default:
-            return "•";
+        tasksButton.addEventListener(
+            "click",
+            loadTasks
+        );
 
     }
 
 }
 
 
-// ==========================================
-// TIMELINE RENDERING
-// ==========================================
+/* =========================================================
+   LOAD TASKS FROM n8n
+========================================================= */
 
-function renderTimeline(container) {
+async function loadTasks() {
+
+    const dashboardList =
+        document.getElementById(
+            "dashboard-task-list"
+        );
+
+
+    const taskList =
+        document.getElementById(
+            "full-task-list"
+        );
+
+
+    if (dashboardList) {
+
+        dashboardList.innerHTML =
+            `<div class="loading">
+                Loading tasks...
+            </div>`;
+
+    }
+
+
+    if (taskList) {
+
+        taskList.innerHTML =
+            `<div class="loading">
+                Loading tasks...
+            </div>`;
+
+    }
+
+
+    try {
+
+        const response =
+            await fetch(
+                API.getTasks,
+                {
+                    method: "GET"
+                }
+            );
+
+
+        if (!response.ok) {
+
+            throw new Error(
+                `n8n returned HTTP ${response.status}`
+            );
+
+        }
+
+
+        const data =
+            await response.json();
+
+
+        /*
+         * n8n can return the Data Table
+         * rows in slightly different structures.
+         *
+         * We support:
+         *
+         * [
+         *   {...}
+         * ]
+         *
+         * {
+         *   "tasks": [...]
+         * }
+         *
+         * {
+         *   "data": [...]
+         * }
+         */
+
+
+        if (Array.isArray(data)) {
+
+            tasks = data;
+
+        }
+
+        else if (
+            Array.isArray(data.tasks)
+        ) {
+
+            tasks = data.tasks;
+
+        }
+
+        else if (
+            Array.isArray(data.data)
+        ) {
+
+            tasks = data.data;
+
+        }
+
+        else {
+
+            tasks = [];
+
+        }
+
+
+        updateStatistics();
+
+        renderDashboardTasks();
+
+        renderTasks();
+
+
+    }
+
+    catch (error) {
+
+        console.error(
+            "StudyFlow task loading error:",
+            error
+        );
+
+
+        if (dashboardList) {
+
+            dashboardList.innerHTML =
+                `<div class="empty-state">
+                    Could not load tasks.
+                </div>`;
+
+        }
+
+
+        if (taskList) {
+
+            taskList.innerHTML =
+                `<div class="empty-state">
+                    Could not load tasks.
+                </div>`;
+
+        }
+
+
+        showToast(
+            "Could not load tasks."
+        );
+
+    }
+
+}
+
+
+/* =========================================================
+   UPDATE DASHBOARD STATISTICS
+========================================================= */
+
+function updateStatistics() {
+
+    const total =
+        tasks.length;
+
+
+    const completed =
+        tasks.filter(
+            task =>
+                String(
+                    task.status || ""
+                ).toLowerCase() ===
+                "completed"
+        ).length;
+
+
+    const pending =
+        tasks.filter(
+            task =>
+                String(
+                    task.status || ""
+                ).toLowerCase() !==
+                "completed"
+        ).length;
+
+
+    const progress =
+        total === 0
+            ? 0
+            : Math.round(
+                (completed / total) * 100
+            );
+
+
+    const totalElement =
+        document.getElementById(
+            "total-tasks"
+        );
+
+
+    const completedElement =
+        document.getElementById(
+            "completed-tasks"
+        );
+
+
+    const pendingElement =
+        document.getElementById(
+            "pending-tasks"
+        );
+
+
+    const progressElement =
+        document.getElementById(
+            "progress-percent"
+        );
+
+
+    const progressLabel =
+        document.getElementById(
+            "progress-label"
+        );
+
+
+    const progressFill =
+        document.getElementById(
+            "progress-fill"
+        );
+
+
+    if (totalElement) {
+
+        totalElement.textContent =
+            total;
+
+    }
+
+
+    if (completedElement) {
+
+        completedElement.textContent =
+            completed;
+
+    }
+
+
+    if (pendingElement) {
+
+        pendingElement.textContent =
+            pending;
+
+    }
+
+
+    if (progressElement) {
+
+        progressElement.textContent =
+            `${progress}%`;
+
+    }
+
+
+    if (progressLabel) {
+
+        progressLabel.textContent =
+            `${progress}%`;
+
+    }
+
+
+    if (progressFill) {
+
+        progressFill.style.width =
+            `${progress}%`;
+
+    }
+
+}
+
+
+/* =========================================================
+   RENDER DASHBOARD TASKS
+========================================================= */
+
+function renderDashboardTasks() {
+
+    const container =
+        document.getElementById(
+            "dashboard-task-list"
+        );
+
 
     if (!container) {
         return;
     }
 
 
-    container.innerHTML = "";
+    if (tasks.length === 0) {
 
-
-    if (
-        !studyPlan ||
-        !Array.isArray(studyPlan.timetable)
-    ) {
+        container.innerHTML =
+            `<div class="empty-state">
+                No study tasks yet.
+                Generate a study plan to get started.
+            </div>`;
 
         return;
 
     }
 
 
-    studyPlan.timetable.forEach(
-        (item, index) => {
+    /*
+     * Dashboard only shows the first 6.
+     */
 
-            const entry =
-                document.createElement("div");
-
-            entry.className =
-                "timeline-entry";
+    const visibleTasks =
+        tasks.slice(0, 6);
 
 
-            entry.innerHTML = `
+    container.innerHTML =
+        visibleTasks
+            .map(
+                task =>
+                    createTaskCard(task)
+            )
+            .join("");
 
-                <div class="timeline-time">
-                    ${item.start || ""}
+}
+
+
+/* =========================================================
+   RENDER FULL TASK PAGE
+========================================================= */
+
+function renderTasks() {
+
+    const container =
+        document.getElementById(
+            "full-task-list"
+        );
+
+
+    if (!container) {
+        return;
+    }
+
+
+    if (tasks.length === 0) {
+
+        container.innerHTML =
+            `<div class="empty-state">
+                No tasks yet.
+            </div>`;
+
+        return;
+
+    }
+
+
+    container.innerHTML =
+        tasks
+            .map(
+                task =>
+                    createTaskCard(task)
+            )
+            .join("");
+
+}
+
+
+/* =========================================================
+   CREATE TASK CARD
+========================================================= */
+
+function createTaskCard(task) {
+
+    /*
+     * Different Data Table configurations
+     * may call this field differently.
+     */
+
+    const id =
+        task.id ??
+        task.ID ??
+        task._id ??
+        task.rowId;
+
+
+    const subject =
+        escapeHTML(
+            task.subject ||
+            "General"
+        );
+
+
+    const topic =
+        escapeHTML(
+            task.topic ||
+            ""
+        );
+
+
+    const title =
+        escapeHTML(
+            task.task ||
+            task.title ||
+            "Study Task"
+        );
+
+
+    const priority =
+        String(
+            task.priority ||
+            "Medium"
+        );
+
+
+    const status =
+        String(
+            task.status ||
+            "Pending"
+        );
+
+
+    const duration =
+        task.duration ||
+        task.minutes ||
+        0;
+
+
+    const deadline =
+        escapeHTML(
+            task.deadline ||
+            "No deadline"
+        );
+
+
+    const scheduledDate =
+        escapeHTML(
+            task.scheduled_date ||
+            task.date ||
+            ""
+        );
+
+
+    const priorityClass =
+        priority
+            .toLowerCase();
+
+
+    const statusClass =
+        status
+            .toLowerCase();
+
+
+    const completed =
+        statusClass ===
+        "completed";
+
+
+    return `
+
+        <div class="task-card">
+
+            <div class="task-main">
+
+                <div class="task-subject">
+                    ${subject}
                 </div>
 
-                <div class="timeline-marker"></div>
+                <div class="task-title">
+                    ${title}
+                </div>
 
-                <div class="timeline-info">
+                ${
+                    topic
+                        ? `
+                            <div class="task-topic">
+                                ${topic}
+                            </div>
+                        `
+                        : ""
+                }
 
-                    <strong>
-                        ${getTypeIcon(item.type)}
-                        ${item.topic || item.task || ""}
-                    </strong>
+                <div class="task-meta">
 
-                    <span>
-                        ${
-                            item.subject
-                                ? `${item.subject} · `
-                                : ""
-                        }
+                    <span
+                        class="badge ${priorityClass}"
+                    >
+                        ${escapeHTML(priority)}
+                    </span>
 
-                        ${item.task || ""}
+                    <span class="badge">
+                        ${duration} min
+                    </span>
+
+                    <span class="badge">
+                        Deadline:
+                        ${deadline}
+                    </span>
+
+                    ${
+                        scheduledDate
+                            ? `
+                                <span class="badge">
+                                    📅
+                                    ${scheduledDate}
+                                </span>
+                            `
+                            : ""
+                    }
+
+                    <span
+                        class="badge ${statusClass}"
+                    >
+                        ${escapeHTML(status)}
                     </span>
 
                 </div>
 
-                <div class="timeline-duration">
-                    ${
-                        item.duration !== undefined
-                            ? `${item.duration} min`
-                            : ""
-                    }
-                </div>
-
-            `;
+            </div>
 
 
-            /*
-                Allow clicking the timeline entry
-                to start the session.
-            */
-
-            if (item.type !== "break") {
-
-                entry.style.cursor = "pointer";
-
-                entry.addEventListener(
-                    "click",
-                    () => {
-
-                        startSession(index);
-
-                    }
-                );
-
+            ${
+                !completed
+                    ? `
+                        <button
+                            class="complete-button"
+                            onclick="completeTask(${JSON.stringify(id)})"
+                        >
+                            ✓ Complete
+                        </button>
+                    `
+                    : ""
             }
 
+        </div>
 
-            container.appendChild(entry);
-
-        }
-    );
+    `;
 
 }
 
 
-// ==========================================
-// RENDER BOTH TIMELINES
-// ==========================================
+/* =========================================================
+   PLANNER
+========================================================= */
 
-function renderAllTimelines() {
+function setupPlanner() {
 
-    renderTimeline(
+    const form =
         document.getElementById(
-            "dashboardTimeline"
-        )
-    );
+            "planner-form"
+        );
 
 
-    renderTimeline(
-        document.getElementById(
-            "fullTimeline"
-        )
-    );
-
-}
-
-
-renderAllTimelines();
-
-
-// ==========================================
-// SESSION MODAL
-// ==========================================
-
-const sessionModal =
-    document.getElementById(
-        "sessionModal"
-    );
-
-
-const modalSubject =
-    document.getElementById(
-        "modalSubject"
-    );
-
-
-const modalTopic =
-    document.getElementById(
-        "modalTopic"
-    );
-
-
-const modalTask =
-    document.getElementById(
-        "modalTask"
-    );
-
-
-const timerElement =
-    document.getElementById(
-        "timer"
-    );
-
-
-const timerProgress =
-    document.getElementById(
-        "timerProgress"
-    );
-
-
-let timerInterval = null;
-
-let currentSessionIndex = null;
-
-let remainingSeconds = 0;
-
-let totalSeconds = 0;
-
-let timerRunning = false;
-
-
-// ==========================================
-// START SESSION
-// ==========================================
-
-function startSession(index) {
-
-    const session =
-        studyPlan.timetable[index];
-
-
-    if (!session) {
+    if (!form) {
         return;
     }
 
 
-    if (session.type === "break") {
-
-        showToast(
-            "This is a break. Go touch grass."
-        );
-
-        return;
-
-    }
-
-
-    currentSessionIndex = index;
-
-
-    modalSubject.textContent =
-        session.subject || "";
-
-
-    modalTopic.textContent =
-        session.topic || "";
-
-
-    modalTask.textContent =
-        session.task || "";
-
-
-    totalSeconds =
-        Number(session.duration || 0) * 60;
-
-
-    remainingSeconds =
-        totalSeconds;
-
-
-    timerRunning = true;
-
-
-    sessionModal.classList.add(
-        "active"
-    );
-
-
-    updateTimer();
-
-
-    clearInterval(timerInterval);
-
-
-    timerInterval =
-        setInterval(() => {
-
-            if (!timerRunning) {
-                return;
-            }
-
-
-            remainingSeconds--;
-
-
-            updateTimer();
-
-
-            if (remainingSeconds <= 0) {
-
-                clearInterval(
-                    timerInterval
-                );
-
-
-                timerRunning = false;
-
-
-                showToast(
-                    "Session complete! ✓"
-                );
-
-            }
-
-        }, 1000);
-
-}
-
-
-// ==========================================
-// TIMER
-// ==========================================
-
-function updateTimer() {
-
-    const minutes =
-        Math.floor(
-            remainingSeconds / 60
-        );
-
-
-    const seconds =
-        remainingSeconds % 60;
-
-
-    timerElement.textContent =
-        `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
-
-
-    const progress =
-        totalSeconds > 0
-            ? remainingSeconds / totalSeconds
-            : 0;
-
-
-    timerProgress.style.transform =
-        `scaleX(${progress})`;
-
-}
-
-
-// ==========================================
-// SESSION BUTTONS
-// ==========================================
-
-document
-    .querySelectorAll("[data-session]")
-    .forEach(button => {
-
-        button.addEventListener(
-            "click",
-            () => {
-
-                startSession(
-                    Number(
-                        button.dataset.session
-                    )
-                );
-
-            }
-        );
-
-    });
-
-
-const closeSessionButton =
-    document.getElementById(
-        "closeSession"
-    );
-
-
-if (closeSessionButton) {
-
-    closeSessionButton.addEventListener(
-        "click",
-        closeSession
-    );
-
-}
-
-
-function closeSession() {
-
-    clearInterval(
-        timerInterval
-    );
-
-
-    timerRunning = false;
-
-
-    if (sessionModal) {
-
-        sessionModal.classList.remove(
-            "active"
-        );
-
-    }
-
-}
-
-
-const pauseTimerButton =
-    document.getElementById(
-        "pauseTimer"
-    );
-
-
-if (pauseTimerButton) {
-
-    pauseTimerButton.addEventListener(
-        "click",
-        event => {
-
-            timerRunning =
-                !timerRunning;
-
-
-            event.target.textContent =
-                timerRunning
-                    ? "Pause"
-                    : "Resume";
-
-        }
-    );
-
-}
-
-
-const completeSessionButton =
-    document.getElementById(
-        "completeSession"
-    );
-
-
-if (completeSessionButton) {
-
-    completeSessionButton.addEventListener(
-        "click",
-        () => {
-
-            clearInterval(
-                timerInterval
-            );
-
-
-            timerRunning = false;
-
-
-            closeSession();
-
-
-            showToast(
-                "Session marked complete ✓"
-            );
-
-        }
-    );
-
-}
-
-
-// ==========================================
-// PLAN GENERATION MODAL
-// ==========================================
-
-const planModal =
-    document.getElementById(
-        "planModal"
-    );
-
-
-const generatePlanButton =
-    document.getElementById(
-        "generatePlan"
-    );
-
-
-if (generatePlanButton) {
-
-    generatePlanButton.addEventListener(
-        "click",
-        () => {
-
-            planModal.classList.add(
-                "active"
-            );
-
-        }
-    );
-
-}
-
-
-const regeneratePlanButton =
-    document.getElementById(
-        "regeneratePlan"
-    );
-
-
-if (regeneratePlanButton) {
-
-    regeneratePlanButton.addEventListener(
-        "click",
-        () => {
-
-            planModal.classList.add(
-                "active"
-            );
-
-        }
-    );
-
-}
-
-
-const closePlanButton =
-    document.getElementById(
-        "closePlan"
-    );
-
-
-if (closePlanButton) {
-
-    closePlanButton.addEventListener(
-        "click",
-        () => {
-
-            planModal.classList.remove(
-                "active"
-            );
-
-        }
-    );
-
-}
-
-
-// ==========================================
-// PLAN FORM
-// ==========================================
-
-const planForm =
-    document.getElementById(
-        "planForm"
-    );
-
-
-if (planForm) {
-
-    planForm.addEventListener(
+    form.addEventListener(
         "submit",
         async event => {
 
             event.preventDefault();
 
-
-            // ----------------------------------
-            // READ FORM
-            // ----------------------------------
-
-            const subjects =
-                document.getElementById(
-                    "subjectsInput"
-                ).value;
-
-
-            const upcomingTests =
-                document.getElementById(
-                    "testsInput"
-                ).value;
-
-
-            const studyTime =
-                Number(
-                    document.getElementById(
-                        "studyTimeInput"
-                    ).value
-                );
-
-
-            const breakTime =
-                Number(
-                    document.getElementById(
-                        "breakInput"
-                    ).value
-                );
-
-
-            const difficultTopics =
-                document.getElementById(
-                    "difficultInput"
-                ).value;
-
-
-            const topics =
-                document.getElementById(
-                    "topicsInput"
-                ).value;
-
-
-            const depth =
-                document.getElementById(
-                    "depthInput"
-                ).value;
-
-
-            const startTime =
-                document.getElementById(
-                    "startTimeInput"
-                ).value;
-
-
-            const sleepEnabled =
-                document.getElementById(
-                    "sleepInput"
-                ).checked;
-
-
-            const sleepTime =
-                document.getElementById(
-                    "sleepTimeInput"
-                ).value;
-
-
-            // ----------------------------------
-            // LOADING STATE
-            // ----------------------------------
-
-            const submitButton =
-                planForm.querySelector(
-                    'button[type="submit"]'
-                );
-
-
-            const originalButtonText =
-                submitButton
-                    ? submitButton.textContent
-                    : "";
-
-
-            if (submitButton) {
-
-                submitButton.disabled = true;
-
-                submitButton.textContent =
-                    "Generating...";
-
-            }
-
-
-            showToast(
-                "Generating your study plan..."
-            );
-
-
-            try {
-
-                // ----------------------------------
-                // SEND DATA TO N8N
-                // ----------------------------------
-
-                const response =
-                    await fetch(
-                        N8N_WEBHOOK_URL,
-                        {
-
-                            method: "POST",
-
-                            headers: {
-                                "Content-Type":
-                                    "application/json"
-                            },
-
-                            body: JSON.stringify({
-
-                                Subjects:
-                                    subjects,
-
-                                "Upcoming Tests":
-                                    upcomingTests,
-
-                                "How many minutes can you study today?":
-                                    studyTime,
-
-                                "Difficult Topics":
-                                    difficultTopics,
-
-                                "Topics you want to study":
-                                    topics,
-
-                                "How long are your breaks?":
-                                    breakTime,
-
-                                "How deep do you want to study?":
-                                    depth,
-
-                                "Preferred Start Time":
-                                    startTime,
-
-                                "Sleep Reminder Enabled":
-                                    sleepEnabled,
-
-                                "Sleep Time":
-                                    sleepTime
-
-                            })
-
-                        }
-                    );
-
-
-                // ----------------------------------
-                // CHECK RESPONSE
-                // ----------------------------------
-
-                if (!response.ok) {
-
-                    throw new Error(
-                        `n8n returned HTTP ${response.status}`
-                    );
-
-                }
-
-
-                const responseText =
-                    await response.text();
-
-
-                if (!responseText.trim()) {
-
-                    throw new Error(
-                        "n8n returned an empty response."
-                    );
-
-                }
-
-
-                // ----------------------------------
-                // TRY JSON FIRST
-                // ----------------------------------
-
-                let parsedResponse = null;
-
-
-                try {
-
-                    parsedResponse =
-                        JSON.parse(
-                            responseText
-                        );
-
-                } catch (error) {
-
-                    /*
-                        Your current n8n workflow
-                        returns normal text.
-
-                        That's completely fine.
-
-                        We simply display it instead
-                        of trying to force it into JSON.
-                    */
-
-                    parsedResponse = null;
-
-                }
-
-
-                // ----------------------------------
-                // STRUCTURED RESPONSE
-                // ----------------------------------
-
-                if (
-                    parsedResponse &&
-                    Array.isArray(
-                        parsedResponse.timetable
-                    )
-                ) {
-
-                    studyPlan =
-                        parsedResponse;
-
-
-                    renderAllTimelines();
-
-
-                    planModal.classList.remove(
-                        "active"
-                    );
-
-
-                    showToast(
-                        "Plan generated successfully ✓"
-                    );
-
-                }
-
-
-                // ----------------------------------
-                // PLAIN TEXT RESPONSE
-                // ----------------------------------
-
-                else {
-
-                    /*
-                        n8n currently returns the AI
-                        response as plain text.
-
-                        Show it in the existing UI
-                        without breaking the app.
-                    */
-
-                    displayTextPlan(
-                        responseText
-                    );
-
-
-                    planModal.classList.remove(
-                        "active"
-                    );
-
-
-                    showToast(
-                        "Plan generated successfully ✓"
-                    );
-
-                }
-
-
-            } catch (error) {
-
-                console.error(
-                    "StudyFlow error:",
-                    error
-                );
-
-
-                showToast(
-                    "Could not generate the plan."
-                );
-
-
-                console.error(
-                    "Make sure your n8n workflow is active and the production webhook URL is correct."
-                );
-
-            } finally {
-
-                if (submitButton) {
-
-                    submitButton.disabled =
-                        false;
-
-                    submitButton.textContent =
-                        originalButtonText;
-
-                }
-
-            }
+            await generatePlan();
 
         }
     );
 
 }
-// ==========================================
-// DISPLAY PLAIN TEXT AI PLAN
-// ==========================================
 
-function displayTextPlan(text) {
 
-    /*
-        Try to find a sensible place for the
-        generated answer.
+/* =========================================================
+   GENERATE STUDY PLAN
+========================================================= */
 
-        If your UI already has a dedicated
-        answer element, use it.
-    */
+async function generatePlan() {
 
-    const possibleContainers = [
-
+    const button =
         document.getElementById(
-            "planAnswer"
-        ),
-
-        document.getElementById(
-            "studyPlanAnswer"
-        ),
-
-        document.getElementById(
-            "planOutput"
-        )
-
-    ];
-
-
-    const container =
-        possibleContainers.find(
-            element => element !== null
+            "generate-plan"
         );
 
 
-    if (container) {
+    const result =
+        document.getElementById(
+            "planner-result"
+        );
 
-        container.textContent =
-            text;
+
+    const output =
+        document.getElementById(
+            "planner-output"
+        );
+
+
+    /* Read form */
+
+    const subjects =
+        document.getElementById(
+            "subjects"
+        ).value.trim();
+
+
+    const upcomingTests =
+        document.getElementById(
+            "upcoming-tests"
+        ).value.trim();
+
+
+    const availableStudyTime =
+        Number(
+            document.getElementById(
+                "available-study-time"
+            ).value
+        );
+
+
+    const difficultTopics =
+        document.getElementById(
+            "difficult-topics"
+        ).value.trim();
+
+
+    const breakInterval =
+        Number(
+            document.getElementById(
+                "break-interval"
+            ).value
+        );
+
+
+    /* Basic validation */
+
+    if (!subjects) {
+
+        showToast(
+            "Enter your subjects."
+        );
 
         return;
 
     }
 
 
-    /*
-        If there isn't an answer container,
-        put the generated text into the
-        dashboard timeline area temporarily.
-    */
+    if (!upcomingTests) {
 
-    const timeline =
-        document.getElementById(
-            "dashboardTimeline"
+        showToast(
+            "Enter your upcoming tests."
         );
 
+        return;
 
-    if (timeline) {
-
-        timeline.innerHTML = "";
+    }
 
 
-        const answer =
-            document.createElement(
-                "div"
+    if (
+        !availableStudyTime ||
+        availableStudyTime <= 0
+    ) {
+
+        showToast(
+            "Enter your available study time."
+        );
+
+        return;
+
+    }
+
+
+    if (
+        !breakInterval ||
+        breakInterval < 5
+    ) {
+
+        showToast(
+            "Enter a break interval of at least 5 minutes."
+        );
+
+        return;
+
+    }
+
+
+    /* Loading state */
+
+    button.disabled = true;
+
+    button.textContent =
+        "🧠 Creating plan...";
+
+
+    try {
+
+        const response =
+            await fetch(
+                API.createPlan,
+                {
+                    method: "POST",
+
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    },
+
+                    body: JSON.stringify({
+
+                        subjects:
+                            subjects,
+
+                        upcoming_tests:
+                            upcomingTests,
+
+                        available_study_time:
+                            availableStudyTime,
+
+                        difficult_topics:
+                            difficultTopics,
+
+                        break_interval:
+                            breakInterval
+
+                    })
+                }
             );
 
 
-        answer.className =
-            "timeline-entry";
+        if (!response.ok) {
+
+            throw new Error(
+                `n8n returned HTTP ${response.status}`
+            );
+
+        }
 
 
-        answer.innerHTML = `
-
-            <div class="timeline-info">
-
-                <strong>
-                    📚 Your Study Plan
-                </strong>
-
-                <span>
-                    ${escapeHTML(text)}
-                </span>
-
-            </div>
-
-        `;
+        const data =
+            await response.json();
 
 
-        timeline.appendChild(
-            answer
+        /*
+         * The Respond to Webhook node
+         * should return the AI Agent output.
+         */
+
+        const aiOutput =
+            data.output ??
+            data.answer ??
+            data.message ??
+            data.response ??
+            data;
+
+
+        if (result) {
+
+            result.classList.remove(
+                "hidden"
+            );
+
+        }
+
+
+        if (output) {
+
+            if (
+                typeof aiOutput ===
+                "string"
+            ) {
+
+                output.textContent =
+                    aiOutput;
+
+            }
+
+            else {
+
+                output.textContent =
+                    JSON.stringify(
+                        aiOutput,
+                        null,
+                        2
+                    );
+
+            }
+
+        }
+
+
+        showToast(
+            "Study plan created!"
+        );
+
+
+        /*
+         * VERY IMPORTANT:
+         *
+         * The n8n AI Agent should have
+         * already created tasks in the
+         * Data Table.
+         *
+         * Fetch them again so the
+         * dashboard immediately updates.
+         */
+
+        await loadTasks();
+
+    }
+
+
+    catch (error) {
+
+        console.error(
+            "StudyFlow planner error:",
+            error
+        );
+
+
+        if (result) {
+
+            result.classList.remove(
+                "hidden"
+            );
+
+        }
+
+
+        if (output) {
+
+            output.textContent =
+                "The study plan could not be created.";
+
+        }
+
+
+        showToast(
+            "Study planner failed."
+        );
+
+    }
+
+
+    finally {
+
+        button.disabled = false;
+
+        button.textContent =
+            "🧠 Generate Study Plan";
+
+    }
+
+}
+
+
+/* =========================================================
+   COMPLETE TASK
+========================================================= */
+
+async function completeTask(id) {
+
+    if (
+        id === undefined ||
+        id === null ||
+        id === "undefined"
+    ) {
+
+        showToast(
+            "This task does not have a valid ID."
+        );
+
+        return;
+
+    }
+
+
+    try {
+
+        const response =
+            await fetch(
+                API.completeTask,
+                {
+                    method: "POST",
+
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    },
+
+                    body: JSON.stringify({
+                        id: id
+                    })
+                }
+            );
+
+
+        if (!response.ok) {
+
+            throw new Error(
+                `n8n returned HTTP ${response.status}`
+            );
+
+        }
+
+
+        showToast(
+            "Task completed ✓"
+        );
+
+
+        /*
+         * Reload Data Table data.
+         */
+
+        await loadTasks();
+
+    }
+
+
+    catch (error) {
+
+        console.error(
+            "StudyFlow complete-task error:",
+            error
+        );
+
+
+        showToast(
+            "Could not complete task."
         );
 
     }
@@ -1125,32 +1122,11 @@ function displayTextPlan(text) {
 }
 
 
-// ==========================================
-// HTML ESCAPING
-// ==========================================
+/* =========================================================
+   TOAST
+========================================================= */
 
-function escapeHTML(text) {
-
-    const div =
-        document.createElement(
-            "div"
-        );
-
-
-    div.textContent =
-        text;
-
-
-    return div.innerHTML;
-
-}
-
-
-// ==========================================
-// TOAST
-// ==========================================
-
-let toastTimeout = null;
+let toastTimer;
 
 
 function showToast(message) {
@@ -1161,18 +1137,12 @@ function showToast(message) {
         );
 
 
-    const toastText =
-        document.getElementById(
-            "toastText"
-        );
-
-
-    if (!toast || !toastText) {
+    if (!toast) {
         return;
     }
 
 
-    toastText.textContent =
+    toast.textContent =
         message;
 
 
@@ -1182,97 +1152,56 @@ function showToast(message) {
 
 
     clearTimeout(
-        toastTimeout
+        toastTimer
     );
 
 
-    toastTimeout =
-        setTimeout(() => {
+    toastTimer =
+        setTimeout(
+            () => {
 
-            toast.classList.remove(
-                "show"
-            );
+                toast.classList.remove(
+                    "show"
+                );
 
-        }, 3000);
+            },
+            3000
+        );
 
 }
 
 
-// ==========================================
-// NOTIFICATIONS
-// ==========================================
+/* =========================================================
+   HTML ESCAPING
+========================================================= */
 
-const notificationsButton =
-    document.getElementById(
-        "notificationsButton"
-    );
+function escapeHTML(value) {
 
+    return String(value)
 
-if (notificationsButton) {
+        .replaceAll(
+            "&",
+            "&amp;"
+        )
 
-    notificationsButton.addEventListener(
-        "click",
-        () => {
+        .replaceAll(
+            "<",
+            "&lt;"
+        )
 
-            showToast(
-                "You have 3 study reminders today."
-            );
+        .replaceAll(
+            ">",
+            "&gt;"
+        )
 
-        }
-    );
+        .replaceAll(
+            '"',
+            "&quot;"
+        )
 
-}
-
-
-// ==========================================
-// MOBILE MENU
-// ==========================================
-
-const mobileMenu =
-    document.getElementById(
-        "mobileMenu"
-    );
-
-
-if (mobileMenu) {
-
-    mobileMenu.addEventListener(
-        "click",
-        () => {
-
-            showToast(
-                "Use the navigation bar below."
-            );
-
-        }
-    );
+        .replaceAll(
+            "'",
+            "&#039;"
+        );
 
 }
-
-
-// ==========================================
-// ESCAPE KEY
-// ==========================================
-
-document.addEventListener(
-    "keydown",
-    event => {
-
-        if (event.key !== "Escape") {
-            return;
-        }
-
-
-        closeSession();
-
-
-        if (planModal) {
-
-            planModal.classList.remove(
-                "active"
-            );
-
-        }
-
-    }
-);
