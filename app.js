@@ -15,7 +15,7 @@ const N8N_BASE_URL =
 const API = {
 
     createPlan:
-        `${N8N_BASE_URL}/webhook/study-planner`
+        `${N8N_BASE_URL}/webhook-test/study-planner`
 
 };
 
