@@ -41,10 +41,6 @@ document.addEventListener(
 
         setupPlanner();
 
-        setupRefreshButtons();
-
-        loadTasks();
-
     }
 );
 
