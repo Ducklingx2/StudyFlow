@@ -11,7 +11,6 @@
 const N8N_BASE_URL =
     "https://n8n2177819934.app.n8n.cloud";
 
-
 const API = {
 
     createPlan:
@@ -31,6 +30,8 @@ const API = {
 ========================================================= */
 
 let tasks = [];
+
+let toastTimer = null;
 
 
 /* =========================================================
@@ -64,12 +65,10 @@ function setupNavigation() {
             ".nav-button"
         );
 
-
     const pages =
         document.querySelectorAll(
             ".page"
         );
-
 
     buttons.forEach(button => {
 
@@ -80,9 +79,6 @@ function setupNavigation() {
                 const pageName =
                     button.dataset.page;
 
-
-                /* Remove active from buttons */
-
                 buttons.forEach(btn => {
 
                     btn.classList.remove(
@@ -91,15 +87,9 @@ function setupNavigation() {
 
                 });
 
-
-                /* Activate clicked button */
-
                 button.classList.add(
                     "active"
                 );
-
-
-                /* Hide every page */
 
                 pages.forEach(page => {
 
@@ -109,14 +99,10 @@ function setupNavigation() {
 
                 });
 
-
-                /* Show selected page */
-
                 const page =
                     document.getElementById(
                         `${pageName}-page`
                     );
-
 
                 if (page) {
 
@@ -125,9 +111,6 @@ function setupNavigation() {
                     );
 
                 }
-
-
-                /* Refresh data when opening these */
 
                 if (
                     pageName === "dashboard" ||
@@ -157,28 +140,41 @@ function setupRefreshButtons() {
             "refresh-dashboard"
         );
 
-
     const tasksButton =
         document.getElementById(
             "refresh-tasks"
         );
 
-
     if (dashboardButton) {
 
         dashboardButton.addEventListener(
             "click",
-            loadTasks
+            async () => {
+
+                dashboardButton.disabled = true;
+
+                await loadTasks();
+
+                dashboardButton.disabled = false;
+
+            }
         );
 
     }
-
 
     if (tasksButton) {
 
         tasksButton.addEventListener(
             "click",
-            loadTasks
+            async () => {
+
+                tasksButton.disabled = true;
+
+                await loadTasks();
+
+                tasksButton.disabled = false;
+
+            }
         );
 
     }
@@ -187,7 +183,7 @@ function setupRefreshButtons() {
 
 
 /* =========================================================
-   LOAD TASKS FROM n8n
+   LOAD TASKS
 ========================================================= */
 
 async function loadTasks() {
@@ -197,32 +193,32 @@ async function loadTasks() {
             "dashboard-task-list"
         );
 
-
     const taskList =
         document.getElementById(
             "full-task-list"
         );
 
-
     if (dashboardList) {
 
         dashboardList.innerHTML =
-            `<div class="loading">
+            `
+            <div class="loading">
                 Loading tasks...
-            </div>`;
+            </div>
+            `;
 
     }
-
 
     if (taskList) {
 
         taskList.innerHTML =
-            `<div class="loading">
+            `
+            <div class="loading">
                 Loading tasks...
-            </div>`;
+            </div>
+            `;
 
     }
-
 
     try {
 
@@ -230,10 +226,13 @@ async function loadTasks() {
             await fetch(
                 API.getTasks,
                 {
-                    method: "GET"
+                    method: "GET",
+                    headers: {
+                        "Accept":
+                            "application/json"
+                    }
                 }
             );
-
 
         if (!response.ok) {
 
@@ -243,66 +242,17 @@ async function loadTasks() {
 
         }
 
-
         const data =
             await response.json();
 
-
-        /*
-         * n8n can return the Data Table
-         * rows in slightly different structures.
-         *
-         * We support:
-         *
-         * [
-         *   {...}
-         * ]
-         *
-         * {
-         *   "tasks": [...]
-         * }
-         *
-         * {
-         *   "data": [...]
-         * }
-         */
-
-
-        if (Array.isArray(data)) {
-
-            tasks = data;
-
-        }
-
-        else if (
-            Array.isArray(data.tasks)
-        ) {
-
-            tasks = data.tasks;
-
-        }
-
-        else if (
-            Array.isArray(data.data)
-        ) {
-
-            tasks = data.data;
-
-        }
-
-        else {
-
-            tasks = [];
-
-        }
-
+        tasks =
+            normalizeTasks(data);
 
         updateStatistics();
 
         renderDashboardTasks();
 
         renderTasks();
-
 
     }
 
@@ -313,26 +263,27 @@ async function loadTasks() {
             error
         );
 
-
         if (dashboardList) {
 
             dashboardList.innerHTML =
-                `<div class="empty-state">
+                `
+                <div class="empty-state">
                     Could not load tasks.
-                </div>`;
+                </div>
+                `;
 
         }
-
 
         if (taskList) {
 
             taskList.innerHTML =
-                `<div class="empty-state">
+                `
+                <div class="empty-state">
                     Could not load tasks.
-                </div>`;
+                </div>
+                `;
 
         }
-
 
         showToast(
             "Could not load tasks."
@@ -344,7 +295,52 @@ async function loadTasks() {
 
 
 /* =========================================================
-   UPDATE DASHBOARD STATISTICS
+   NORMALIZE n8n RESPONSE
+========================================================= */
+
+function normalizeTasks(data) {
+
+    if (Array.isArray(data)) {
+
+        return data;
+
+    }
+
+    if (
+        data &&
+        Array.isArray(data.tasks)
+    ) {
+
+        return data.tasks;
+
+    }
+
+    if (
+        data &&
+        Array.isArray(data.data)
+    ) {
+
+        return data.data;
+
+    }
+
+    if (
+        data &&
+        data.data &&
+        Array.isArray(data.data.tasks)
+    ) {
+
+        return data.data.tasks;
+
+    }
+
+    return [];
+
+}
+
+
+/* =========================================================
+   STATISTICS
 ========================================================= */
 
 function updateStatistics() {
@@ -352,26 +348,17 @@ function updateStatistics() {
     const total =
         tasks.length;
 
-
     const completed =
         tasks.filter(
             task =>
                 String(
-                    task.status || ""
-                ).toLowerCase() ===
-                "completed"
+                    task.status ?? ""
+                ).trim().toLowerCase()
+                === "completed"
         ).length;
-
 
     const pending =
-        tasks.filter(
-            task =>
-                String(
-                    task.status || ""
-                ).toLowerCase() !==
-                "completed"
-        ).length;
-
+        total - completed;
 
     const progress =
         total === 0
@@ -380,42 +367,35 @@ function updateStatistics() {
                 (completed / total) * 100
             );
 
-
     const totalElement =
         document.getElementById(
             "total-tasks"
         );
-
 
     const completedElement =
         document.getElementById(
             "completed-tasks"
         );
 
-
     const pendingElement =
         document.getElementById(
             "pending-tasks"
         );
-
 
     const progressElement =
         document.getElementById(
             "progress-percent"
         );
 
-
     const progressLabel =
         document.getElementById(
             "progress-label"
         );
 
-
     const progressFill =
         document.getElementById(
             "progress-fill"
         );
-
 
     if (totalElement) {
 
@@ -424,14 +404,12 @@ function updateStatistics() {
 
     }
 
-
     if (completedElement) {
 
         completedElement.textContent =
             completed;
 
     }
-
 
     if (pendingElement) {
 
@@ -440,7 +418,6 @@ function updateStatistics() {
 
     }
 
-
     if (progressElement) {
 
         progressElement.textContent =
@@ -448,14 +425,12 @@ function updateStatistics() {
 
     }
 
-
     if (progressLabel) {
 
         progressLabel.textContent =
             `${progress}%`;
 
     }
-
 
     if (progressFill) {
 
@@ -468,7 +443,7 @@ function updateStatistics() {
 
 
 /* =========================================================
-   RENDER DASHBOARD TASKS
+   DASHBOARD TASKS
 ========================================================= */
 
 function renderDashboardTasks() {
@@ -478,46 +453,37 @@ function renderDashboardTasks() {
             "dashboard-task-list"
         );
 
-
     if (!container) {
-        return;
-    }
 
+        return;
+
+    }
 
     if (tasks.length === 0) {
 
         container.innerHTML =
-            `<div class="empty-state">
-                No study tasks yet.
+            `
+            <div class="empty-state">
+                No study tasks yet.<br>
                 Generate a study plan to get started.
-            </div>`;
+            </div>
+            `;
 
         return;
 
     }
 
-
-    /*
-     * Dashboard only shows the first 6.
-     */
-
-    const visibleTasks =
-        tasks.slice(0, 6);
-
-
     container.innerHTML =
-        visibleTasks
-            .map(
-                task =>
-                    createTaskCard(task)
-            )
+        tasks
+            .slice(0, 6)
+            .map(createTaskCard)
             .join("");
 
 }
 
 
 /* =========================================================
-   RENDER FULL TASK PAGE
+   FULL TASK PAGE
 ========================================================= */
 
 function renderTasks() {
@@ -527,30 +493,28 @@ function renderTasks() {
             "full-task-list"
         );
 
-
     if (!container) {
-        return;
-    }
 
+        return;
+
+    }
 
     if (tasks.length === 0) {
 
         container.innerHTML =
-            `<div class="empty-state">
+            `
+            <div class="empty-state">
                 No tasks yet.
-            </div>`;
+            </div>
+            `;
 
         return;
 
     }
 
-
     container.innerHTML =
         tasks
-            .map(
-                task =>
-                    createTaskCard(task)
-            )
+            .map(createTaskCard)
             .join("");
 
 }
@@ -562,92 +526,98 @@ function renderTasks() {
 
 function createTaskCard(task) {
 
-    /*
-     * Different Data Table configurations
-     * may call this field differently.
-     */
-
     const id =
         task.id ??
         task.ID ??
         task._id ??
-        task.rowId;
-
+        task.rowId ??
+        task.row_id;
 
     const subject =
         escapeHTML(
-            task.subject ||
+            task.subject ??
             "General"
         );
 
-
     const topic =
         escapeHTML(
-            task.topic ||
+            task.topic ??
             ""
         );
-
 
     const title =
         escapeHTML(
-            task.task ||
-            task.title ||
+            task.task ??
+            task.title ??
             "Study Task"
         );
 
-
     const priority =
         String(
-            task.priority ||
+            task.priority ??
             "Medium"
         );
 
-
     const status =
         String(
-            task.status ||
+            task.status ??
             "Pending"
         );
 
-
     const duration =
-        task.duration ||
-        task.minutes ||
+        task.duration ??
+        task.minutes ??
         0;
-
 
     const deadline =
         escapeHTML(
-            task.deadline ||
+            task.deadline ??
             "No deadline"
         );
 
-
     const scheduledDate =
         escapeHTML(
-            task.scheduled_date ||
-            task.date ||
+            task.scheduled_date ??
+            task.scheduledDate ??
+            task.date ??
             ""
         );
 
-
     const priorityClass =
         priority
-            .toLowerCase();
-
+            .toLowerCase()
+            .replace(/\s+/g, "-");
 
     const statusClass =
         status
-            .toLowerCase();
-
+            .toLowerCase()
+            .replace(/\s+/g, "-");
 
     const completed =
-        statusClass ===
-        "completed";
+        statusClass === "completed";
 
+    let completeButton = "";
+
+    if (!completed && id !== undefined) {
+
+        const safeId =
+            encodeURIComponent(
+                String(id)
+            );
+
+        completeButton =
+            `
+            <button
+                class="complete-button"
+                data-task-id="${escapeHTML(safeId)}"
+            >
+                ✓ Complete
+            </button>
+            `;
+
+    }
 
     return `
-
         <div class="task-card">
 
             <div class="task-main">
@@ -672,14 +642,12 @@ function createTaskCard(task) {
 
                 <div class="task-meta">
 
-                    <span
-                        class="badge ${priorityClass}"
-                    >
+                    <span class="badge ${priorityClass}">
                         ${escapeHTML(priority)}
                     </span>
 
                     <span class="badge">
-                        ${duration} min
+                        ${escapeHTML(duration)} min
                     </span>
 
                     <span class="badge">
@@ -691,16 +659,13 @@ function createTaskCard(task) {
                         scheduledDate
                             ? `
                                 <span class="badge">
-                                    📅
-                                    ${scheduledDate}
+                                    📅 ${scheduledDate}
                                 </span>
                             `
                             : ""
                     }
 
-                    <span
-                        class="badge ${statusClass}"
-                    >
+                    <span class="badge ${statusClass}">
                         ${escapeHTML(status)}
                     </span>
 
@@ -708,25 +673,54 @@ function createTaskCard(task) {
 
             </div>
 
-
-            ${
-                !completed
-                    ? `
-                        <button
-                            class="complete-button"
-                            onclick="completeTask(${JSON.stringify(id)})"
-                        >
-                            ✓ Complete
-                        </button>
-                    `
-                    : ""
-            }
+            ${completeButton}
 
         </div>
-
     `;
 
 }
+
+
+/* =========================================================
+   COMPLETE BUTTON EVENTS
+========================================================= */
+
+document.addEventListener(
+    "click",
+    event => {
+
+        const button =
+            event.target.closest(
+                ".complete-button"
+            );
+
+        if (!button) {
+
+            return;
+
+        }
+
+        const encodedId =
+            button.dataset.taskId;
+
+        if (!encodedId) {
+
+            showToast(
+                "This task does not have a valid ID."
+            );
+
+            return;
+
+        }
+
+        completeTask(
+            decodeURIComponent(
+                encodedId
+            )
+        );
+
+    }
+);
 
 
 /* =========================================================
@@ -740,11 +734,11 @@ function setupPlanner() {
             "planner-form"
         );
 
-
     if (!form) {
-        return;
-    }
 
+        return;
+
+    }
 
     form.addEventListener(
         "submit",
@@ -761,7 +755,7 @@ function setupPlanner() {
 
 
 /* =========================================================
-   GENERATE STUDY PLAN
+   GENERATE PLAN
 ========================================================= */
 
 async function generatePlan() {
@@ -771,32 +765,25 @@ async function generatePlan() {
             "generate-plan"
         );
 
-
     const result =
         document.getElementById(
             "planner-result"
         );
-
 
     const output =
         document.getElementById(
             "planner-output"
         );
 
-
-    /* Read form */
-
     const subjects =
         document.getElementById(
             "subjects"
         ).value.trim();
 
-
     const upcomingTests =
         document.getElementById(
             "upcoming-tests"
         ).value.trim();
-
 
     const availableStudyTime =
         Number(
@@ -805,12 +792,10 @@ async function generatePlan() {
             ).value
         );
 
-
     const difficultTopics =
         document.getElementById(
             "difficult-topics"
         ).value.trim();
-
 
     const breakInterval =
         Number(
@@ -820,7 +805,9 @@ async function generatePlan() {
         );
 
 
-    /* Basic validation */
+    /* =====================================================
+       VALIDATION
+    ===================================================== */
 
     if (!subjects) {
 
@@ -832,7 +819,6 @@ async function generatePlan() {
 
     }
 
-
     if (!upcomingTests) {
 
         showToast(
@@ -842,7 +828,6 @@ async function generatePlan() {
         return;
 
     }
-
 
     if (
         !availableStudyTime ||
@@ -856,7 +841,6 @@ async function generatePlan() {
         return;
 
     }
-
 
     if (
         !breakInterval ||
@@ -872,13 +856,38 @@ async function generatePlan() {
     }
 
 
-    /* Loading state */
+    /* =====================================================
+       LOADING
+    ===================================================== */
 
-    button.disabled = true;
+    if (button) {
 
-    button.textContent =
-        "🧠 Creating plan...";
+        button.disabled = true;
 
+        button.textContent =
+            "🧠 Creating your plan...";
+
+    }
+
+    if (result) {
+
+        result.classList.remove(
+            "hidden"
+        );
+
+    }
+
+    if (output) {
+
+        output.textContent =
+            "Your AI planner is working...";
+
+    }
+
+
+    /* =====================================================
+       SEND TO n8n
+    ===================================================== */
 
     try {
 
@@ -895,8 +904,7 @@ async function generatePlan() {
 
                     body: JSON.stringify({
 
-                        subjects:
-                            subjects,
+                        subjects,
 
                         upcoming_tests:
                             upcomingTests,
@@ -911,6 +919,7 @@ async function generatePlan() {
                             breakInterval
 
                     })
+
                 }
             );
 
@@ -928,26 +937,16 @@ async function generatePlan() {
             await response.json();
 
 
-        /*
-         * The Respond to Webhook node
-         * should return the AI Agent output.
-         */
+        /* =================================================
+           EXTRACT AI RESPONSE
+        ================================================= */
 
         const aiOutput =
-            data.output ??
-            data.answer ??
-            data.message ??
-            data.response ??
+            data?.output ??
+            data?.answer ??
+            data?.message ??
+            data?.response ??
             data;
-
-
-        if (result) {
-
-            result.classList.remove(
-                "hidden"
-            );
-
-        }
 
 
         if (output) {
@@ -977,25 +976,17 @@ async function generatePlan() {
 
 
         showToast(
-            "Study plan created!"
+            "Study plan created ✓"
         );
 
 
-        /*
-         * VERY IMPORTANT:
-         *
-         * The n8n AI Agent should have
-         * already created tasks in the
-         * Data Table.
-         *
-         * Fetch them again so the
-         * dashboard immediately updates.
-         */
+        /* =================================================
+           REFRESH TASKS
+        ================================================= */
 
         await loadTasks();
 
     }
-
 
     catch (error) {
 
@@ -1004,23 +995,11 @@ async function generatePlan() {
             error
         );
 
-
-        if (result) {
-
-            result.classList.remove(
-                "hidden"
-            );
-
-        }
-
-
         if (output) {
 
             output.textContent =
                 "The study plan could not be created.";
-
         }
-
 
         showToast(
             "Study planner failed."
@@ -1028,13 +1007,16 @@ async function generatePlan() {
 
     }
 
-
     finally {
 
-        button.disabled = false;
+        if (button) {
 
-        button.textContent =
-            "🧠 Generate Study Plan";
+            button.disabled = false;
+
+            button.textContent =
+                "🧠 Generate Study Plan";
+
+        }
 
     }
 
@@ -1050,7 +1032,7 @@ async function completeTask(id) {
     if (
         id === undefined ||
         id === null ||
-        id === "undefined"
+        String(id).trim() === ""
     ) {
 
         showToast(
@@ -1060,7 +1042,6 @@ async function completeTask(id) {
         return;
 
     }
-
 
     try {
 
@@ -1078,6 +1059,7 @@ async function completeTask(id) {
                     body: JSON.stringify({
                         id: id
                     })
+
                 }
             );
 
@@ -1096,14 +1078,9 @@ async function completeTask(id) {
         );
 
 
-        /*
-         * Reload Data Table data.
-         */
-
         await loadTasks();
 
     }
-
 
     catch (error) {
 
@@ -1111,7 +1088,6 @@ async function completeTask(id) {
             "StudyFlow complete-task error:",
             error
         );
-
 
         showToast(
             "Could not complete task."
@@ -1126,9 +1102,6 @@ async function completeTask(id) {
    TOAST
 ========================================================= */
 
-let toastTimer;
-
-
 function showToast(message) {
 
     const toast =
@@ -1136,25 +1109,22 @@ function showToast(message) {
             "toast"
         );
 
-
     if (!toast) {
-        return;
-    }
 
+        return;
+
+    }
 
     toast.textContent =
         message;
-
 
     toast.classList.add(
         "show"
     );
 
-
     clearTimeout(
         toastTimer
     );
-
 
     toastTimer =
         setTimeout(
