@@ -1,150 +1,124 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
 
     <title>StudyFlow</title>
-
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link
-        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
-        rel="stylesheet"
-    >
 
     <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
-<div class="app">
+    <!-- =========================
+         SIDEBAR
+    ========================== -->
 
-    <!-- SIDEBAR -->
     <aside class="sidebar">
 
         <div class="brand">
-            <div class="brand-icon">🌊</div>
-            <span>StudyFlow</span>
+            <div class="brand-icon">S</div>
+
+            <div>
+                <h1>StudyFlow</h1>
+                <p>AI Study Planner</p>
+            </div>
         </div>
 
-        <nav class="nav">
+        <nav class="navigation">
 
-            <button class="nav-item active" data-page="dashboard">
-                <span>⌂</span>
-                <span>Home</span>
+            <button
+                class="nav-button active"
+                data-page="dashboard"
+            >
+                <span>📊</span>
+                <span>Dashboard</span>
             </button>
 
-            <button class="nav-item" data-page="schedule">
-                <span>▦</span>
-                <span>Schedule</span>
+            <button
+                class="nav-button"
+                data-page="planner"
+            >
+                <span>🧠</span>
+                <span>AI Planner</span>
             </button>
 
-            <button class="nav-item" data-page="subjects">
-                <span>▤</span>
-                <span>Subjects</span>
-            </button>
-
-            <button class="nav-item" data-page="progress">
-                <span>◔</span>
-                <span>Progress</span>
+            <button
+                class="nav-button"
+                data-page="tasks"
+            >
+                <span>✓</span>
+                <span>Tasks</span>
             </button>
 
         </nav>
 
-        <div class="sidebar-bottom">
-
-            <button class="nav-item" data-page="settings">
-                <span>⚙</span>
-                <span>Settings</span>
-            </button>
-
-            <div class="profile-mini">
-                <div class="avatar">S</div>
-
-                <div>
-                    <strong>Student</strong>
-                    <small>Study mode</small>
-                </div>
-            </div>
-
+        <div class="sidebar-footer">
+            StudyFlow
         </div>
 
     </aside>
 
 
-    <!-- MAIN -->
-    <main class="main">
+    <!-- =========================
+         MAIN CONTENT
+    ========================== -->
 
-        <!-- TOPBAR -->
-        <header class="topbar">
-
-            <button class="mobile-menu" id="mobileMenu">
-                ☰
-            </button>
-
-            <div class="mobile-brand">
-                ✦ StudyFlow
-            </div>
-
-            <div class="topbar-right">
-
-                <button class="icon-button" id="notificationsButton">
-                    🔔
-                    <span class="notification-dot"></span>
-                </button>
-
-                <div class="avatar">
-                    S
-                </div>
-
-            </div>
-
-        </header>
+    <main class="main-content">
 
 
-        <!-- DASHBOARD PAGE -->
-        <section class="page active" id="dashboard">
+        <!-- =========================
+             DASHBOARD
+        ========================== -->
 
-            <div class="page-header">
+        <section
+            id="dashboard-page"
+            class="page active"
+        >
+
+            <header class="page-header">
 
                 <div>
-                    <p class="eyebrow">SUNDAY, AUGUST 16</p>
-                    <h1>Good evening.</h1>
+                    <p class="eyebrow">
+                        STUDY OVERVIEW
+                    </p>
+
+                    <h2>Dashboard</h2>
+
                     <p class="subtitle">
-                        Here's what your study plan looks like today.
+                        Here's how your studying is going.
                     </p>
                 </div>
 
-                <button class="primary-button" id="generatePlan">
-                    <span>✦</span>
-                    Generate Plan
+                <button
+                    id="refresh-dashboard"
+                    class="secondary-button"
+                >
+                    ↻ Refresh
                 </button>
 
-            </div>
+            </header>
 
 
-            <!-- STATS -->
+            <!-- STATISTICS -->
+
             <div class="stats-grid">
 
                 <div class="stat-card">
 
-                    <div class="stat-icon purple">
+                    <div class="stat-icon">
                         📚
                     </div>
 
                     <div>
-                        <span class="stat-label">
-                            Study today
-                        </span>
-
-                        <strong>
-                            1h 25m
-                        </strong>
-
-                        <small>
-                            of 2h planned
-                        </small>
+                        <p>Total Tasks</p>
+                        <h3 id="total-tasks">0</h3>
                     </div>
 
                 </div>
@@ -152,574 +126,322 @@
 
                 <div class="stat-card">
 
-                    <div class="stat-icon blue">
-                        ⏱
-                    </div>
-
-                    <div>
-                        <span class="stat-label">
-                            Time remaining
-                        </span>
-
-                        <strong>
-                            35m
-                        </strong>
-
-                        <small>
-                            2 sessions left
-                        </small>
-                    </div>
-
-                </div>
-
-
-                <div class="stat-card">
-
-                    <div class="stat-icon green">
+                    <div class="stat-icon">
                         ✓
                     </div>
 
                     <div>
-                        <span class="stat-label">
-                            Progress
-                        </span>
-
-                        <strong>
-                            68%
-                        </strong>
-
-                        <small>
-                            3 of 5 sessions
-                        </small>
-                    </div>
-
-                </div>
-
-            </div>
-
-
-            <!-- DASHBOARD GRID -->
-            <div class="dashboard-grid">
-
-
-                <!-- NEXT SESSION -->
-                <div class="card next-session">
-
-                    <div class="card-header">
-
-                        <div>
-                            <p class="card-eyebrow">
-                                NEXT UP
-                            </p>
-
-                            <h2>
-                                Your next session
-                            </h2>
-                        </div>
-
-                        <span class="live-badge">
-                            NEXT
-                        </span>
-
-                    </div>
-
-
-                    <div class="next-content">
-
-                        <div class="subject-icon maths">
-                            ∑
-                        </div>
-
-                        <div class="next-info">
-
-                            <span class="subject-name">
-                                Maths
-                            </span>
-
-                            <h3>
-                                Differentiation
-                            </h3>
-
-                            <p>
-                                Deep concept review and worked examples
-                            </p>
-
-                            <div class="session-meta">
-
-                                <span>
-                                    🕔 5:00 PM – 5:45 PM
-                                </span>
-
-                                <span>
-                                    ⏱ 45 min
-                                </span>
-
-                            </div>
-
-                        </div>
-
-                        <button
-                            class="start-button"
-                            data-session="0"
-                        >
-                            Start
-                        </button>
-
+                        <p>Completed</p>
+                        <h3 id="completed-tasks">0</h3>
                     </div>
 
                 </div>
 
 
-                <!-- PROGRESS -->
-                <div class="card progress-card">
+                <div class="stat-card">
 
-                    <div class="card-header">
-
-                        <div>
-                            <p class="card-eyebrow">
-                                TODAY
-                            </p>
-
-                            <h2>
-                                Progress
-                            </h2>
-                        </div>
-
-                        <span class="percentage">
-                            68%
-                        </span>
-
+                    <div class="stat-icon">
+                        ⏳
                     </div>
-
-                    <div class="progress-ring">
-
-                        <svg viewBox="0 0 100 100">
-
-                            <circle
-                                class="ring-background"
-                                cx="50"
-                                cy="50"
-                                r="42"
-                            />
-
-                            <circle
-                                class="ring-progress"
-                                cx="50"
-                                cy="50"
-                                r="42"
-                            />
-
-                        </svg>
-
-                        <div class="ring-text">
-                            <strong>1h 25m</strong>
-                            <span>studied</span>
-                        </div>
-
-                    </div>
-
-                </div>
-
-
-            </div>
-
-
-            <!-- TIMELINE -->
-            <div class="card timeline-card">
-
-                <div class="card-header">
 
                     <div>
-                        <p class="card-eyebrow">
-                            TODAY'S PLAN
+                        <p>Pending</p>
+                        <h3 id="pending-tasks">0</h3>
+                    </div>
+
+                </div>
+
+
+                <div class="stat-card">
+
+                    <div class="stat-icon">
+                        📈
+                    </div>
+
+                    <div>
+                        <p>Progress</p>
+                        <h3 id="progress-percent">0%</h3>
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- PROGRESS -->
+
+            <div class="panel">
+
+                <div class="panel-heading">
+
+                    <div>
+                        <h3>Overall Progress</h3>
+
+                        <p>
+                            Your completed study tasks.
                         </p>
-
-                        <h2>
-                            Timeline
-                        </h2>
                     </div>
 
-                    <button
-                        class="text-button"
-                        data-page-target="schedule"
-                    >
-                        View full schedule →
-                    </button>
+                    <strong id="progress-label">
+                        0%
+                    </strong>
 
                 </div>
 
-                <div id="dashboardTimeline"></div>
+                <div class="progress-container">
+
+                    <div
+                        id="progress-fill"
+                        class="progress-fill"
+                    ></div>
+
+                </div>
+
+            </div>
+
+
+            <!-- TASKS -->
+
+            <div class="panel">
+
+                <div class="panel-heading">
+
+                    <div>
+                        <h3>Current Tasks</h3>
+
+                        <p>
+                            Your upcoming study work.
+                        </p>
+                    </div>
+
+                </div>
+
+                <div id="dashboard-task-list">
+
+                    <div class="loading">
+                        Loading tasks...
+                    </div>
+
+                </div>
 
             </div>
 
         </section>
 
 
-        <!-- SCHEDULE PAGE -->
-        <section class="page" id="schedule">
+        <!-- =========================
+             AI PLANNER
+        ========================== -->
 
-            <div class="page-header">
+        <section
+            id="planner-page"
+            class="page"
+        >
+
+            <header class="page-header">
 
                 <div>
+
                     <p class="eyebrow">
-                        SCHEDULE
+                        AI PLANNER
                     </p>
 
-                    <h1>
-                        Today's plan
-                    </h1>
+                    <h2>Create a Study Plan</h2>
 
                     <p class="subtitle">
-                        Your AI-generated study timetable.
+                        Give StudyFlow your workload and let it organize it.
                     </p>
+
                 </div>
 
-                <button class="secondary-button" id="regeneratePlan">
-                    ↻ Regenerate
+            </header>
+
+
+            <form
+                id="planner-form"
+                class="planner-form"
+            >
+
+                <div class="form-group">
+
+                    <label for="subjects">
+                        Subjects
+                    </label>
+
+                    <textarea
+                        id="subjects"
+                        placeholder="Maths
+Science
+English"
+                        required
+                    ></textarea>
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="upcoming-tests">
+                        Upcoming Tests
+                    </label>
+
+                    <textarea
+                        id="upcoming-tests"
+                        placeholder="Maths - 20 August
+Science - 23 August"
+                        required
+                    ></textarea>
+
+                </div>
+
+
+                <div class="form-row">
+
+                    <div class="form-group">
+
+                        <label for="available-study-time">
+                            Available Study Time
+                        </label>
+
+                        <div class="input-unit">
+
+                            <input
+                                id="available-study-time"
+                                type="number"
+                                min="1"
+                                placeholder="60"
+                                required
+                            >
+
+                            <span>minutes/day</span>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label for="break-interval">
+                            Break Interval
+                        </label>
+
+                        <div class="input-unit">
+
+                            <input
+                                id="break-interval"
+                                type="number"
+                                min="5"
+                                placeholder="25"
+                                required
+                            >
+
+                            <span>minutes</span>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="difficult-topics">
+                        Difficult Topics
+                    </label>
+
+                    <textarea
+                        id="difficult-topics"
+                        placeholder="Algebra
+Electricity"
+                    ></textarea>
+
+                </div>
+
+
+                <button
+                    id="generate-plan"
+                    class="primary-button"
+                    type="submit"
+                >
+                    🧠 Generate Study Plan
                 </button>
 
-            </div>
-
-            <div class="schedule-layout">
-
-                <div class="card schedule-card">
-
-                    <div class="schedule-date">
-                        <div class="date-number">
-                            16
-                        </div>
-
-                        <div>
-                            <strong>Sunday</strong>
-                            <span>August 2026</span>
-                        </div>
-                    </div>
-
-                    <div id="fullTimeline"></div>
-
-                </div>
+            </form>
 
 
-                <div class="card plan-summary">
+            <!-- AI RESULT -->
 
-                    <p class="card-eyebrow">
-                        AI SUMMARY
-                    </p>
+            <div
+                id="planner-result"
+                class="panel planner-result hidden"
+            >
 
-                    <h2>
-                        Today's strategy
-                    </h2>
+                <div class="panel-heading">
 
-                    <p id="planSummary">
-                        Focus on active practice, worked examples,
-                        timed problems and error correction.
-                    </p>
+                    <div>
+                        <h3>Your Study Plan</h3>
 
-                    <div class="summary-stat">
-                        <span>Total study</span>
-                        <strong>120 min</strong>
-                    </div>
-
-                    <div class="summary-stat">
-                        <span>Breaks</span>
-                        <strong>20 min</strong>
-                    </div>
-
-                    <div class="summary-stat">
-                        <span>Sessions</span>
-                        <strong>5</strong>
+                        <p>
+                            Generated by your AI planning workflow.
+                        </p>
                     </div>
 
                 </div>
+
+                <div
+                    id="planner-output"
+                    class="planner-output"
+                ></div>
 
             </div>
 
         </section>
 
 
-        <!-- SUBJECTS PAGE -->
-        <section class="page" id="subjects">
+        <!-- =========================
+             TASKS
+        ========================== -->
 
-            <div class="page-header">
+        <section
+            id="tasks-page"
+            class="page"
+        >
+
+            <header class="page-header">
 
                 <div>
+
                     <p class="eyebrow">
-                        SUBJECTS
+                        TASK MANAGEMENT
                     </p>
 
-                    <h1>
-                        Your subjects
-                    </h1>
+                    <h2>Tasks</h2>
 
                     <p class="subtitle">
-                        Keep track of what you're working on.
+                        Manage your study schedule.
                     </p>
+
                 </div>
 
-                <button class="primary-button">
-                    + Add Subject
+                <button
+                    id="refresh-tasks"
+                    class="secondary-button"
+                >
+                    ↻ Refresh
                 </button>
 
-            </div>
+            </header>
 
 
-            <div class="subjects-grid">
+            <div
+                id="full-task-list"
+                class="task-list"
+            >
 
-                <div class="subject-card">
-
-                    <div class="subject-icon maths">
-                        ∑
-                    </div>
-
-                    <h2>Maths</h2>
-
-                    <p>
-                        Differentiation, algebra and practice
-                    </p>
-
-                    <div class="subject-progress">
-                        <div>
-                            <span>Today's progress</span>
-                            <strong>80%</strong>
-                        </div>
-
-                        <div class="progress-bar">
-                            <div style="width: 80%"></div>
-                        </div>
-                    </div>
-
-                </div>
-
-
-                <div class="subject-card">
-
-                    <div class="subject-icon science">
-                        ⚗
-                    </div>
-
-                    <h2>Science</h2>
-
-                    <p>
-                        Biology and chemistry
-                    </p>
-
-                    <div class="subject-progress">
-                        <div>
-                            <span>Today's progress</span>
-                            <strong>60%</strong>
-                        </div>
-
-                        <div class="progress-bar">
-                            <div style="width: 60%"></div>
-                        </div>
-                    </div>
-
-                </div>
-
-
-                <div class="subject-card">
-
-                    <div class="subject-icon english">
-                        Aa
-                    </div>
-
-                    <h2>English</h2>
-
-                    <p>
-                        Literature and writing
-                    </p>
-
-                    <div class="subject-progress">
-                        <div>
-                            <span>Today's progress</span>
-                            <strong>90%</strong>
-                        </div>
-
-                        <div class="progress-bar">
-                            <div style="width: 90%"></div>
-                        </div>
-                    </div>
-
-                </div>
-
-            </div>
-
-        </section>
-
-
-        <!-- PROGRESS PAGE -->
-        <section class="page" id="progress">
-
-            <div class="page-header">
-
-                <div>
-                    <p class="eyebrow">
-                        PROGRESS
-                    </p>
-
-                    <h1>
-                        Your progress
-                    </h1>
-
-                    <p class="subtitle">
-                        A quick look at how your studying is going.
-                    </p>
-                </div>
-
-            </div>
-
-
-            <div class="stats-grid">
-
-                <div class="stat-card">
-                    <div class="stat-icon purple">🔥</div>
-                    <div>
-                        <span class="stat-label">Study streak</span>
-                        <strong>7 days</strong>
-                        <small>Keep it going</small>
-                    </div>
-                </div>
-
-                <div class="stat-card">
-                    <div class="stat-icon blue">⏱</div>
-                    <div>
-                        <span class="stat-label">This week</span>
-                        <strong>8h 40m</strong>
-                        <small>of focused study</small>
-                    </div>
-                </div>
-
-                <div class="stat-card">
-                    <div class="stat-icon green">✓</div>
-                    <div>
-                        <span class="stat-label">Sessions</span>
-                        <strong>24</strong>
-                        <small>completed this week</small>
-                    </div>
-                </div>
-
-            </div>
-
-
-            <div class="card progress-large">
-
-                <div class="card-header">
-                    <div>
-                        <p class="card-eyebrow">THIS WEEK</p>
-                        <h2>Study time</h2>
-                    </div>
-                </div>
-
-                <div class="fake-chart">
-
-                    <div class="chart-column">
-                        <div style="height: 55%"></div>
-                        <span>Mon</span>
-                    </div>
-
-                    <div class="chart-column">
-                        <div style="height: 75%"></div>
-                        <span>Tue</span>
-                    </div>
-
-                    <div class="chart-column">
-                        <div style="height: 45%"></div>
-                        <span>Wed</span>
-                    </div>
-
-                    <div class="chart-column">
-                        <div style="height: 90%"></div>
-                        <span>Thu</span>
-                    </div>
-
-                    <div class="chart-column">
-                        <div style="height: 65%"></div>
-                        <span>Fri</span>
-                    </div>
-
-                    <div class="chart-column">
-                        <div style="height: 80%"></div>
-                        <span>Sat</span>
-                    </div>
-
-                    <div class="chart-column today">
-                        <div style="height: 70%"></div>
-                        <span>Sun</span>
-                    </div>
-
-                </div>
-
-            </div>
-
-        </section>
-
-
-        <!-- SETTINGS -->
-        <section class="page" id="settings">
-
-            <div class="page-header">
-
-                <div>
-                    <p class="eyebrow">
-                        SETTINGS
-                    </p>
-
-                    <h1>
-                        Settings
-                    </h1>
-
-                    <p class="subtitle">
-                        Configure your study experience.
-                    </p>
-                </div>
-
-            </div>
-
-
-            <div class="settings-list">
-
-                <div class="setting">
-
-                    <div>
-                        <strong>Study reminders</strong>
-                        <span>Receive reminders when sessions begin.</span>
-                    </div>
-
-                    <label class="switch">
-                        <input type="checkbox" checked>
-                        <span></span>
-                    </label>
-
-                </div>
-
-
-                <div class="setting">
-
-                    <div>
-                        <strong>Break reminders</strong>
-                        <span>Get notified when it's time to rest.</span>
-                    </div>
-
-                    <label class="switch">
-                        <input type="checkbox" checked>
-                        <span></span>
-                    </label>
-
-                </div>
-
-
-                <div class="setting">
-
-                    <div>
-                        <strong>Sleep protection</strong>
-                        <span>Stop scheduling study after your wind-down time.</span>
-                    </div>
-
-                    <label class="switch">
-                        <input type="checkbox" checked>
-                        <span></span>
-                    </label>
-
+                <div class="loading">
+                    Loading tasks...
                 </div>
 
             </div>
@@ -729,235 +451,16 @@
     </main>
 
 
-    <!-- MOBILE NAV -->
-    <nav class="mobile-nav">
-
-        <button class="mobile-nav-item active" data-page="dashboard">
-            <span>⌂</span>
-            Home
-        </button>
-
-        <button class="mobile-nav-item" data-page="schedule">
-            <span>▦</span>
-            Schedule
-        </button>
-
-        <button class="mobile-nav-item" data-page="progress">
-            <span>◔</span>
-            Progress
-        </button>
-
-        <button class="mobile-nav-item" data-page="settings">
-            <span>⚙</span>
-            Settings
-        </button>
-
-    </nav>
-
-
-    <!-- STUDY SESSION MODAL -->
-    <div class="modal-overlay" id="sessionModal">
-
-        <div class="session-modal">
-
-            <button class="close-modal" id="closeSession">
-                ×
-            </button>
-
-            <p class="card-eyebrow">
-                CURRENT SESSION
-            </p>
-
-            <div class="session-subject" id="modalSubject">
-                Maths
-            </div>
-
-            <h1 id="modalTopic">
-                Differentiation
-            </h1>
-
-            <p id="modalTask">
-                Deep concept review and worked examples.
-            </p>
-
-            <div class="timer" id="timer">
-                45:00
-            </div>
-
-            <div class="timer-progress">
-                <div id="timerProgress"></div>
-            </div>
-
-            <div class="timer-buttons">
-
-                <button class="secondary-button" id="pauseTimer">
-                    Pause
-                </button>
-
-                <button class="primary-button" id="completeSession">
-                    ✓ Complete
-                </button>
-
-            </div>
-
-        </div>
-
-    </div>
-
-
-    <!-- GENERATE PLAN MODAL -->
-    <div class="modal-overlay" id="planModal">
-
-        <div class="plan-modal">
-
-            <button class="close-modal" id="closePlan">
-                ×
-            </button>
-
-            <p class="card-eyebrow">
-                AI STUDY PLANNER
-            </p>
-
-            <h1>
-                Build your plan
-            </h1>
-
-            <p class="modal-subtitle">
-                Tell the planner what you need to work on today.
-            </p>
-
-            <form id="planForm">
-
-                <label>
-                    Subjects
-                    <input
-                        type="text"
-                        id="subjectsInput"
-                        value="Maths"
-                        placeholder="e.g. Maths, Science"
-                    >
-                </label>
-
-                <label>
-                    Upcoming tests
-                    <input
-                        type="text"
-                        id="testsInput"
-                        placeholder="e.g. Maths test on Thursday"
-                    >
-                </label>
-
-                <div class="form-row">
-
-                    <label>
-                        Study time
-                        <input
-                            type="number"
-                            id="studyTimeInput"
-                            value="120"
-                            min="15"
-                        >
-                    </label>
-
-                    <label>
-                        Break length
-                        <input
-                            type="number"
-                            id="breakInput"
-                            value="10"
-                            min="0"
-                        >
-                    </label>
-
-                </div>
-
-                <label>
-                    Difficult topics
-                    <input
-                        type="text"
-                        id="difficultInput"
-                        placeholder="e.g. Differentiation"
-                    >
-                </label>
-
-                <label>
-                    Topics you want to study
-                    <input
-                        type="text"
-                        id="topicsInput"
-                        placeholder="What do you want to focus on?"
-                    >
-                </label>
-
-                <label>
-                    Study depth
-                    <select id="depthInput">
-                        <option>Quick review</option>
-                        <option>Normal</option>
-                        <option selected>Deep</option>
-                        <option>Extremely deep</option>
-                    </select>
-                </label>
-
-                <div class="form-row">
-
-                    <label>
-                        Start time
-                        <input
-                            type="time"
-                            id="startTimeInput"
-                            value="17:00"
-                        >
-                    </label>
-
-                    <label>
-                        Wind-down time
-                        <input
-                            type="time"
-                            id="sleepTimeInput"
-                            value="22:00"
-                        >
-                    </label>
-
-                </div>
-
-                <label class="checkbox-label">
-
-                    <input
-                        type="checkbox"
-                        id="sleepInput"
-                        checked
-                    >
-
-                    <span>
-                        Enable sleep reminder
-                    </span>
-
-                </label>
-
-                <button
-                    type="submit"
-                    class="primary-button full-width"
-                >
-                    ✦ Generate Study Plan
-                </button>
-
-            </form>
-
-        </div>
-
-    </div>
-
-
     <!-- TOAST -->
-    <div class="toast" id="toast">
-        <span>✓</span>
-        <span id="toastText">Done</span>
-    </div>
 
-</div>
+    <div
+        id="toast"
+        class="toast"
+    ></div>
 
-<script src="app.js"></script>
+
+    <script src="app.js"></script>
 
 </body>
+
 </html>
