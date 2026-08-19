@@ -103,8 +103,6 @@ function setupNavigation() {
                     pageName === "tasks"
                 ) {
 
-                    loadTasks();
-
                 }
 
             }
