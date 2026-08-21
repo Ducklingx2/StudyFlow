@@ -854,6 +854,27 @@ function createTaskCard(task) {
 
 }
 
+/* =========================================================
+   NOTIFICATIONS
+======================================================== */
+
+async function setupNotifications() {
+    if (!("Notification" in window)) {
+        return false;
+    }
+
+    if (Notification.permission === "granted") {
+        return true;
+    }
+
+    if (Notification.permission === "denied") {
+        return false;
+    }
+
+    const permission = await Notification.requestPermission();
+
+    return permission === "granted";
+}
 
 /* =========================================================
    TOAST
@@ -885,7 +906,7 @@ function showToast(message) {
 
 }
 
-
+const notificationsEnabled = await setupNotifications();
 /* =========================================================
    HTML ESCAPING
 ========================================================= */
