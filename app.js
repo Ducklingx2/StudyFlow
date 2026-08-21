@@ -1067,6 +1067,29 @@ function testNotification() {
 
 }
 
+const studyMusic = new Audio(
+    "assets/study-music.mp3"
+);
+
+studyMusic.loop = true;
+studyMusic.volume = 0.7;
+
+const musicVolume =
+    document.getElementById("music-volume");
+
+if (musicVolume) {
+
+    musicVolume.addEventListener(
+        "input",
+        () => {
+
+            studyMusic.volume =
+                Number(musicVolume.value);
+
+        }
+    );
+
+}
 
 /* =========================================================
    TOAST
