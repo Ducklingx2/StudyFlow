@@ -11,20 +11,22 @@
 const PLANNER_WEBHOOK =
     "https://n8n2177819934.app.n8n.cloud/webhook-test/study-planner";
 
-const TASKS_WEBHOOK =
-    "https://n8n2177819934.app.n8n.cloud/webhook/study-tasks";
-
-
 /* =========================================================
    DOM ELEMENTS
 ========================================================= */
 
-const plannerForm = document.getElementById("planner-form");
+const plannerForm =
+    document.getElementById("planner-form");
 
-const subjectsInput = document.getElementById("subjects");
-const upcomingTestsInput = document.getElementById("upcoming-tests");
+const subjectsInput =
+    document.getElementById("subjects");
+
+const upcomingTestsInput =
+    document.getElementById("upcoming-tests");
+
 const availableStudyTimeInput =
     document.getElementById("available-study-time");
+
 const breakIntervalInput =
     document.getElementById("break-interval");
 
@@ -122,13 +124,17 @@ function setupNavigation() {
                 button.dataset.page;
 
             navigationButtons.forEach(btn => {
+
                 btn.classList.remove("active");
+
             });
 
             button.classList.add("active");
 
             pages.forEach(page => {
+
                 page.classList.remove("active");
+
             });
 
             const page =
@@ -137,7 +143,9 @@ function setupNavigation() {
                 );
 
             if (page) {
+
                 page.classList.add("active");
+
             }
 
         });
@@ -146,6 +154,7 @@ function setupNavigation() {
 
 }
 
+
 /* =========================================================
    PLANNER FORM
 ========================================================= */
@@ -153,9 +162,14 @@ function setupNavigation() {
 function setupPlannerForm() {
 
     if (!plannerForm) {
-        console.error("Planner form not found.");
+
+        console.error(
+            "Planner form not found."
+        );
+
         return;
     }
+
 
     plannerForm.addEventListener(
         "submit",
@@ -163,7 +177,19 @@ function setupPlannerForm() {
 
             event.preventDefault();
 
+
+            /*
+                Ask for browser notification permission
+                when the user actually interacts with
+                the planner.
+            */
+
             await setupNotifications();
+
+
+            /*
+                Generate the study plan.
+            */
 
             await generatePlan();
 
@@ -172,6 +198,7 @@ function setupPlannerForm() {
 
 }
 
+
 /* =========================================================
    GENERATE STUDY PLAN
 ========================================================= */
@@ -179,8 +206,11 @@ function setupPlannerForm() {
 async function generatePlan() {
 
     if (!generatePlanButton) {
+
         return;
+
     }
+
 
     try {
 
@@ -221,26 +251,45 @@ async function generatePlan() {
 
 
         /* ---------------------------------------------
-           BASIC VALIDATION
+           VALIDATION
         --------------------------------------------- */
 
         if (!subjects) {
-            showToast("Please enter your subjects.");
+
+            showToast(
+                "Please enter your subjects."
+            );
+
             return;
         }
+
 
         if (!upcomingTests) {
-            showToast("Please enter your upcoming tests.");
+
+            showToast(
+                "Please enter your upcoming tests."
+            );
+
             return;
         }
+
 
         if (!availableStudyTime) {
-            showToast("Please enter your available study time.");
+
+            showToast(
+                "Please enter your available study time."
+            );
+
             return;
         }
 
+
         if (!breakInterval) {
-            showToast("Please enter your break interval.");
+
+            showToast(
+                "Please enter your break interval."
+            );
+
             return;
         }
 
@@ -279,13 +328,10 @@ async function generatePlan() {
 
 
         /* ---------------------------------------------
-           BUTTON LOADING STATE
+           BUTTON LOADING
         --------------------------------------------- */
 
         generatePlanButton.disabled = true;
-
-        const originalButtonText =
-            generatePlanButton.innerHTML;
 
         generatePlanButton.innerHTML =
             "🧠 Generating...";
@@ -295,23 +341,26 @@ async function generatePlan() {
            SEND TO N8N
         --------------------------------------------- */
 
-        const response = await fetch(
-            PLANNER_WEBHOOK,
-            {
-                method: "POST",
+        const response =
+            await fetch(
+                PLANNER_WEBHOOK,
+                {
+                    method: "POST",
 
-                headers: {
-                    "Content-Type":
-                        "application/json"
-                },
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    },
 
-                body: JSON.stringify(formData)
-            }
-        );
+                    body:
+                        JSON.stringify(formData)
+
+                }
+            );
 
 
         /* ---------------------------------------------
-           CHECK HTTP RESPONSE
+           CHECK RESPONSE
         --------------------------------------------- */
 
         if (!response.ok) {
@@ -325,11 +374,6 @@ async function generatePlan() {
 
         /* ---------------------------------------------
            READ AI RESPONSE AS TEXT
-           
-           IMPORTANT:
-           We deliberately use response.text()
-           because Respond to Webhook is returning
-           the AI Agent's output directly.
         --------------------------------------------- */
 
         const planText =
@@ -342,10 +386,6 @@ async function generatePlan() {
         );
 
 
-        /* ---------------------------------------------
-           EMPTY RESPONSE CHECK
-        --------------------------------------------- */
-
         if (!planText.trim()) {
 
             throw new Error(
@@ -356,14 +396,17 @@ async function generatePlan() {
 
 
         /* ---------------------------------------------
-           DISPLAY AI RESPONSE
+           DISPLAY PLAN
         --------------------------------------------- */
 
         if (plannerResult) {
+
             plannerResult.classList.remove(
                 "hidden"
             );
+
         }
+
 
         if (plannerOutput) {
 
@@ -383,10 +426,7 @@ async function generatePlan() {
 
 
         /* ---------------------------------------------
-           OPTIONAL TASK REFRESH
-           
-           This allows the Data Table / task
-           workflow to update before we reload tasks.
+           REFRESH TASKS
         --------------------------------------------- */
 
         setTimeout(() => {
@@ -403,10 +443,12 @@ async function generatePlan() {
             error
         );
 
+
         showToast(
             error.message ||
             "Something went wrong while generating your plan."
         );
+
 
     } finally {
 
@@ -432,8 +474,11 @@ async function generatePlan() {
 async function loadTasks() {
 
     if (!TASKS_WEBHOOK) {
+
         return;
+
     }
+
 
     try {
 
@@ -442,12 +487,13 @@ async function loadTasks() {
         );
 
 
-        const response = await fetch(
-            TASKS_WEBHOOK,
-            {
-                method: "GET"
-            }
-        );
+        const response =
+            await fetch(
+                TASKS_WEBHOOK,
+                {
+                    method: "GET"
+                }
+            );
 
 
         if (!response.ok) {
@@ -503,26 +549,32 @@ async function loadTasks() {
 
 
         /* ---------------------------------------------
-           SUPPORT MULTIPLE RESPONSE FORMATS
+           SUPPORT RESPONSE FORMATS
         --------------------------------------------- */
 
         if (Array.isArray(data)) {
 
             tasks = data;
 
-        } else if (
+        }
+
+        else if (
             Array.isArray(data.tasks)
         ) {
 
             tasks = data.tasks;
 
-        } else if (
+        }
+
+        else if (
             Array.isArray(data.data)
         ) {
 
             tasks = data.data;
 
-        } else {
+        }
+
+        else {
 
             tasks = [];
 
@@ -586,9 +638,11 @@ function updateStatistics() {
 
     const completed =
         tasks.filter(task =>
+
             String(task.status || "")
-                .toLowerCase()
-                === "completed"
+                .toLowerCase() ===
+            "completed"
+
         ).length;
 
 
@@ -598,9 +652,11 @@ function updateStatistics() {
 
     const progress =
         total > 0
+
             ? Math.round(
                 (completed / total) * 100
             )
+
             : 0;
 
 
@@ -674,7 +730,9 @@ function renderTasks() {
 function renderDashboardTasks() {
 
     if (!dashboardTaskList) {
+
         return;
+
     }
 
 
@@ -710,7 +768,9 @@ function renderDashboardTasks() {
 function renderFullTasks() {
 
     if (!fullTaskList) {
+
         return;
+
     }
 
 
@@ -766,8 +826,7 @@ function createTaskCard(task) {
 
 
     const duration =
-        task.duration ||
-        0;
+        task.duration || 0;
 
 
     const deadline =
@@ -854,9 +913,17 @@ function createTaskCard(task) {
 
 }
 
+
 /* =========================================================
    NOTIFICATIONS
 ========================================================= */
+
+/*
+    This function is called when the user submits
+    the planner form.
+
+    It asks Chrome for notification permission.
+*/
 
 async function setupNotifications() {
 
@@ -867,26 +934,35 @@ async function setupNotifications() {
         );
 
         return false;
+
     }
 
 
-    if (Notification.permission === "granted") {
+    if (
+        Notification.permission ===
+        "granted"
+    ) {
 
         console.log(
             "Velora notifications already enabled."
         );
 
         return true;
+
     }
 
 
-    if (Notification.permission === "denied") {
+    if (
+        Notification.permission ===
+        "denied"
+    ) {
 
         console.warn(
             "Velora notifications are blocked."
         );
 
         return false;
+
     }
 
 
@@ -895,12 +971,17 @@ async function setupNotifications() {
         const permission =
             await Notification.requestPermission();
 
+
         console.log(
             "Velora notification permission:",
             permission
         );
 
-        return permission === "granted";
+
+        return (
+            permission === "granted"
+        );
+
 
     } catch (error) {
 
@@ -916,13 +997,36 @@ async function setupNotifications() {
 }
 
 
-function showNotification(title, message) {
+/*
+    THIS is the function that actually creates
+    the browser notification.
+*/
+
+function showNotification(
+    title,
+    message
+) {
 
     if (
-        !("Notification" in window) ||
-        Notification.permission !== "granted"
+        !("Notification" in window)
     ) {
+
         return;
+
+    }
+
+
+    if (
+        Notification.permission !==
+        "granted"
+    ) {
+
+        console.warn(
+            "Notification permission not granted."
+        );
+
+        return;
+
     }
 
 
@@ -930,30 +1034,39 @@ function showNotification(title, message) {
         title,
         {
             body: message,
-            icon: "assets/velorafavicon.png"
+
+            icon:
+                "/VeloraAI/assets/velorafavicon.png"
         }
     );
 
 }
 
-async function setupNotifications() {
-    if (!("Notification" in window)) {
-        return false;
-    }
 
-    if (Notification.permission === "granted") {
-        return true;
-    }
+/* =========================================================
+   TEST NOTIFICATION
+========================================================= */
 
-    if (Notification.permission === "denied") {
-        return false;
-    }
+/*
+    You can temporarily run:
 
-    const permission =
-        await Notification.requestPermission();
+        testNotification();
 
-    return permission === "granted";
+    from the browser console.
+
+    This confirms that the browser notification
+    part works BEFORE we connect n8n.
+*/
+
+function testNotification() {
+
+    showNotification(
+        "Velora Test",
+        "Browser notifications are working."
+    );
+
 }
+
 
 /* =========================================================
    TOAST
@@ -962,7 +1075,9 @@ async function setupNotifications() {
 function showToast(message) {
 
     if (!toast) {
+
         return;
+
     }
 
 
@@ -984,6 +1099,7 @@ function showToast(message) {
     }, 3000);
 
 }
+
 
 /* =========================================================
    HTML ESCAPING
