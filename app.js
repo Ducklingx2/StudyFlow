@@ -1073,7 +1073,7 @@ function testNotification() {
 
 const studyMusic =
     new Audio(
-        "assets/music/study-music.mp3"
+        "assets/study-music.mp3"
     );
 
 studyMusic.loop = true;
