@@ -1067,6 +1067,79 @@ function testNotification() {
 
 }
 
+/* =========================================================
+   STUDY MUSIC
+========================================================= */
+
+const studyMusic =
+    new Audio(
+        "assets/music/study-music.mp3"
+    );
+
+studyMusic.loop = true;
+studyMusic.volume = 0.7;
+
+
+const musicButton =
+    document.getElementById("music-button");
+
+const musicVolume =
+    document.getElementById("music-volume");
+
+
+if (musicButton) {
+
+    musicButton.addEventListener(
+        "click",
+        async () => {
+
+            try {
+
+                if (studyMusic.paused) {
+
+                    await studyMusic.play();
+
+                    musicButton.textContent =
+                        "🔊";
+
+                } else {
+
+                    studyMusic.pause();
+
+                    musicButton.textContent =
+                        "🔇";
+
+                }
+
+            } catch (error) {
+
+                console.error(
+                    "Unable to play study music:",
+                    error
+                );
+
+            }
+
+        }
+    );
+
+}
+
+
+if (musicVolume) {
+
+    musicVolume.addEventListener(
+        "input",
+        () => {
+
+            studyMusic.volume =
+                Number(musicVolume.value);
+
+        }
+    );
+
+}
+
 const studyMusic = new Audio(
     "assets/study-music.mp3"
 );
