@@ -1,224 +1,553 @@
-/* =========================================================
+/* =========================================
    VELORA
-   AI STUDY PLANNER
-   Frontend ↔ n8n
-========================================================= */
+   Main Application
+========================================= */
 
 
-/* =========================================================
-   n8n CONFIGURATION
-========================================================= */
+/* =========================================
+   CONFIGURATION
+========================================= */
 
-const N8N_BASE_URL =
-    "https://n8n2177819934.app.n8n.cloud";
-
-
-const API = {
-
-    /*
-     * Currently using the TEST webhook.
-     *
-     * When you deploy the workflow, change this to:
-     *
-     * /webhook/study-planner
-     */
-
-    createPlan:
-        `${N8N_BASE_URL}/webhook-test/study-planner`,
+const PLANNER_WEBHOOK =
+    "https://n8n2177819934.app.n8n.cloud/webhook-test/study-planner";
 
 
-    /*
-     * IMPORTANT:
-     *
-     * Put your actual task-reading endpoint here.
-     *
-     * Example:
-     *
-     * `${N8N_BASE_URL}/webhook/study-tasks`
-     *
-     * If you haven't created it yet, leave it empty.
-     */
+/* =========================================
+   STATE
+========================================= */
 
-    getTasks:
-        "",
+let currentPage = "dashboard";
 
 
-    /*
-     * Put your task completion endpoint here when ready.
-     */
+/* =========================================
+   DOM ELEMENTS
+========================================= */
 
-    completeTask:
-        ""
-};
+const pages = document.querySelectorAll(".page");
+const navButtons = document.querySelectorAll(".nav-button");
 
+const plannerForm =
+    document.getElementById("planner-form");
 
-/* =========================================================
-   APPLICATION STATE
-========================================================= */
+const plannerResult =
+    document.getElementById("planner-result");
 
-let tasks = [];
+const plannerOutput =
+    document.getElementById("planner-output");
 
-let toastTimer;
+const generateButton =
+    document.getElementById("generate-plan");
 
-
-/* =========================================================
-   START APPLICATION
-========================================================= */
-
-document.addEventListener(
-    "DOMContentLoaded",
-    () => {
-
-        setupNavigation();
-
-        setupPlanner();
-
-        /*
-         * Only load tasks if an endpoint exists.
-         *
-         * This prevents Velora from screaming about
-         * a missing endpoint before you've created one.
-         */
-
-        if (API.getTasks) {
-            loadTasks();
-        }
-        else {
-            updateStatistics();
-
-            renderDashboardTasks();
-
-            renderTasks();
-        }
-
-    }
-);
+const toast =
+    document.getElementById("toast");
 
 
-/* =========================================================
+/* =========================================
    NAVIGATION
-========================================================= */
+========================================= */
 
-function setupNavigation() {
+function showPage(pageName) {
 
-    const buttons =
-        document.querySelectorAll(
-            ".nav-button"
+    pages.forEach(page => {
+        page.classList.remove("active");
+    });
+
+    navButtons.forEach(button => {
+        button.classList.remove("active");
+    });
+
+    const selectedPage =
+        document.getElementById(`${pageName}-page`);
+
+    const selectedButton =
+        document.querySelector(
+            `.nav-button[data-page="${pageName}"]`
         );
 
+    if (selectedPage) {
+        selectedPage.classList.add("active");
+    }
 
-    const pages =
-        document.querySelectorAll(
-            ".page"
-        );
+    if (selectedButton) {
+        selectedButton.classList.add("active");
+    }
 
+    currentPage = pageName;
 
-    buttons.forEach(button => {
-
-        button.addEventListener(
-            "click",
-            () => {
-
-                const pageName =
-                    button.dataset.page;
-
-
-                /*
-                 * Remove active state
-                 */
-
-                buttons.forEach(btn => {
-
-                    btn.classList.remove(
-                        "active"
-                    );
-
-                });
+    if (pageName === "dashboard") {
+        updateDashboard();
+    }
+}
 
 
-                /*
-                 * Activate clicked button
-                 */
+/* =========================================
+   NAVIGATION EVENTS
+========================================= */
 
-                button.classList.add(
-                    "active"
-                );
+navButtons.forEach(button => {
 
+    button.addEventListener("click", () => {
 
-                /*
-                 * Hide pages
-                 */
+        const page =
+            button.dataset.page;
 
-                pages.forEach(page => {
-
-                    page.classList.remove(
-                        "active"
-                    );
-
-                });
-
-
-                /*
-                 * Show selected page
-                 */
-
-                const page =
-                    document.getElementById(
-                        `${pageName}-page`
-                    );
-
-
-                if (page) {
-
-                    page.classList.add(
-                        "active"
-                    );
-
-                }
-
-
-                /*
-                 * Refresh tasks when needed
-                 */
-
-                if (
-                    (
-                        pageName === "dashboard" ||
-                        pageName === "tasks"
-                    ) &&
-                    API.getTasks
-                ) {
-
-                    loadTasks();
-
-                }
-
-            }
-        );
+        showPage(page);
 
     });
+
+});
+
+
+/* =========================================
+   TOAST
+========================================= */
+
+function showToast(message, duration = 3000) {
+
+    if (!toast) {
+        return;
+    }
+
+    toast.textContent = message;
+
+    toast.classList.add("show");
+
+    setTimeout(() => {
+        toast.classList.remove("show");
+    }, duration);
+}
+
+
+/* =========================================
+   GET FORM VALUES
+========================================= */
+
+function getPlannerFormData() {
+
+    const subjects =
+        document.getElementById("subjects").value.trim();
+
+    const grade =
+        document.getElementById("grade").value;
+
+    const upcomingTests =
+        document
+            .getElementById("upcoming-tests")
+            .value
+            .trim();
+
+    const availableStudyTime =
+        document
+            .getElementById("available-study-time")
+            .value;
+
+    const breakInterval =
+        document
+            .getElementById("break-interval")
+            .value;
+
+    const studyStart =
+        document
+            .getElementById("study-start")
+            .value;
+
+    const studyDepth =
+        document
+            .getElementById("study-depth")
+            .value;
+
+    const sleepReminder =
+        document
+            .getElementById("sleep-reminder")
+            .value;
+
+    const difficultTopics =
+        document
+            .getElementById("difficult-topics")
+            .value
+            .trim();
+
+
+    return {
+
+        subjects,
+
+        grade,
+
+        upcoming_tests:
+            upcomingTests,
+
+        available_study_time:
+            Number(availableStudyTime),
+
+        break_interval:
+            Number(breakInterval),
+
+        study_start:
+            studyStart,
+
+        study_depth:
+            studyDepth,
+
+        sleep_reminder:
+            sleepReminder,
+
+        difficult_topics:
+            difficultTopics
+
+    };
 
 }
 
 
-/* =========================================================
-   PLANNER
-========================================================= */
+/* =========================================
+   VALIDATE FORM
+========================================= */
 
-function setupPlanner() {
+function validatePlannerData(data) {
 
-    const form =
-        document.getElementById(
-            "planner-form"
+    if (!data.subjects) {
+        showToast("Please enter your subjects.");
+        return false;
+    }
+
+    if (!data.grade) {
+        showToast("Please select your grade.");
+        return false;
+    }
+
+    if (!data.upcoming_tests) {
+        showToast("Please enter your upcoming tests.");
+        return false;
+    }
+
+    if (!data.available_study_time ||
+        data.available_study_time <= 0) {
+
+        showToast(
+            "Please enter your available study time."
         );
 
+        return false;
+    }
 
-    if (!form) {
+    if (!data.break_interval ||
+        data.break_interval < 5) {
+
+        showToast(
+            "Break interval must be at least 5 minutes."
+        );
+
+        return false;
+    }
+
+    if (!data.study_start) {
+
+        showToast(
+            "Please choose when you want to start studying."
+        );
+
+        return false;
+    }
+
+    return true;
+
+}
+
+
+/* =========================================
+   GENERATE STUDY PLAN
+========================================= */
+
+async function generatePlan() {
+
+    const formData =
+        getPlannerFormData();
+
+
+    /* -----------------------------------------
+       VALIDATION
+    ----------------------------------------- */
+
+    if (!validatePlannerData(formData)) {
         return;
     }
 
 
-    form.addEventListener(
+    /* -----------------------------------------
+       DEBUG
+    ----------------------------------------- */
+
+    console.log(
+        "VELORA → n8n:",
+        formData
+    );
+
+
+    /* -----------------------------------------
+       BUTTON STATE
+    ----------------------------------------- */
+
+    const originalButtonText =
+        generateButton
+            ? generateButton.innerHTML
+            : "";
+
+    if (generateButton) {
+
+        generateButton.disabled = true;
+
+        generateButton.innerHTML =
+            "🧠 Generating plan...";
+
+    }
+
+
+    /* -----------------------------------------
+       SHOW RESULT AREA
+    ----------------------------------------- */
+
+    if (plannerResult) {
+        plannerResult.classList.remove("hidden");
+    }
+
+    if (plannerOutput) {
+
+        plannerOutput.textContent =
+            "Velora is creating your study plan...";
+
+    }
+
+
+    try {
+
+        /* =====================================
+           SEND TO N8N
+        ===================================== */
+
+        const response = await fetch(
+            PLANNER_WEBHOOK,
+            {
+                method: "POST",
+
+                headers: {
+                    "Content-Type": "application/json"
+                },
+
+                body: JSON.stringify(formData)
+            }
+        );
+
+
+        console.log(
+            "n8n HTTP status:",
+            response.status
+        );
+
+
+        /* =====================================
+           READ RAW RESPONSE
+        ===================================== */
+
+        const responseText =
+            await response.text();
+
+
+        console.log(
+            "n8n raw response:",
+            responseText
+        );
+
+
+        /* =====================================
+           EMPTY RESPONSE
+        ===================================== */
+
+        if (!responseText.trim()) {
+
+            throw new Error(
+                "n8n returned an empty response."
+            );
+
+        }
+
+
+        /* =====================================
+           PARSE JSON
+        ===================================== */
+
+        let data;
+
+        try {
+
+            data =
+                JSON.parse(responseText);
+
+        } catch (jsonError) {
+
+            console.error(
+                "Invalid JSON from n8n:",
+                responseText
+            );
+
+            throw new Error(
+                "n8n returned invalid JSON."
+            );
+
+        }
+
+
+        /* =====================================
+           HTTP ERROR
+        ===================================== */
+
+        if (!response.ok) {
+
+            const errorMessage =
+                data.message ||
+                data.error ||
+                `n8n returned HTTP ${response.status}`;
+
+            throw new Error(errorMessage);
+
+        }
+
+
+        /* =====================================
+           GET AI PLAN
+        ===================================== */
+
+        let plan =
+            data.plan;
+
+
+        /*
+            Some n8n configurations may return
+            the AI output directly instead of:
+
+            {
+                success: true,
+                plan: "..."
+            }
+
+            These fallbacks make the frontend
+            more tolerant.
+        */
+
+        if (
+            typeof plan === "object" &&
+            plan !== null
+        ) {
+
+            plan =
+                plan.output ||
+                plan.text ||
+                JSON.stringify(
+                    plan,
+                    null,
+                    2
+                );
+
+        }
+
+
+        if (!plan) {
+
+            if (data.output) {
+
+                plan =
+                    data.output;
+
+            } else {
+
+                plan =
+                    JSON.stringify(
+                        data,
+                        null,
+                        2
+                    );
+
+            }
+
+        }
+
+
+        /* =====================================
+           DISPLAY PLAN
+        ===================================== */
+
+        if (plannerOutput) {
+
+            plannerOutput.textContent =
+                plan;
+
+        }
+
+
+        showToast(
+            "Study plan generated!",
+            3000
+        );
+
+
+        /* =====================================
+           UPDATE DASHBOARD
+        ===================================== */
+
+        updateDashboard();
+
+
+    } catch (error) {
+
+        console.error(
+            "Velora planner error:",
+            error
+        );
+
+
+        if (plannerOutput) {
+
+            plannerOutput.textContent =
+                `Unable to generate your study plan.
+
+${error.message}`;
+
+        }
+
+
+        showToast(
+            "Something went wrong generating the plan.",
+            4000
+        );
+
+    } finally {
+
+        /* =====================================
+           RESTORE BUTTON
+        ===================================== */
+
+        if (generateButton) {
+
+            generateButton.disabled = false;
+
+            generateButton.innerHTML =
+                originalButtonText ||
+                "🧠 Generate Study Plan";
+
+        }
+
+    }
+
+}
+
+
+/* =========================================
+   FORM SUBMIT
+========================================= */
+
+if (plannerForm) {
+
+    plannerForm.addEventListener(
         "submit",
         async event => {
 
@@ -232,1326 +561,95 @@ function setupPlanner() {
 }
 
 
-/* =========================================================
-   GENERATE STUDY PLAN
-========================================================= */
+/* =========================================
+   DASHBOARD
+========================================= */
 
-async function generatePlan() {
+/*
+    The Data Table is NOT being fetched here yet.
 
-    const button =
-        document.getElementById(
-            "generate-plan"
-        );
+    For now, these values are placeholders.
+    Your reminder/task workflow can eventually
+    provide the task data separately.
+*/
 
+function updateDashboard() {
 
-    const result =
-        document.getElementById(
-            "planner-result"
-        );
+    const totalTasks =
+        document.getElementById("total-tasks");
 
+    const completedTasks =
+        document.getElementById("completed-tasks");
 
-    const output =
-        document.getElementById(
-            "planner-output"
-        );
+    const pendingTasks =
+        document.getElementById("pending-tasks");
 
-
-    /*
-     * Read form values
-     */
-
-    const subjectsElement =
-        document.getElementById(
-            "subjects"
-        );
-
-
-    const upcomingTestsElement =
-        document.getElementById(
-            "upcoming-tests"
-        );
-
-
-    const availableTimeElement =
-        document.getElementById(
-            "available-study-time"
-        );
-
-
-    const breakIntervalElement =
-        document.getElementById(
-            "break-interval"
-        );
-
-
-    const difficultTopicsElement =
-        document.getElementById(
-            "difficult-topics"
-        );
-
-
-    const studyDepthElement =
-        document.getElementById(
-            "study-depth"
-        );
-
-
-    const sleepReminderElement =
-        document.getElementById(
-            "sleep-reminder"
-        );
-
-
-    /*
-     * Make sure the elements actually exist.
-     */
-
-    if (
-        !subjectsElement ||
-        !upcomingTestsElement ||
-        !availableTimeElement ||
-        !breakIntervalElement ||
-        !difficultTopicsElement ||
-        !studyDepthElement ||
-        !sleepReminderElement
-    ) {
-
-        console.error(
-            "Velora planner form is missing one or more fields."
-        );
-
-        showToast(
-            "Planner form is missing a field."
-        );
-
-        return;
-
-    }
-
-
-    const subjects =
-        subjectsElement.value.trim();
-
-
-    const upcomingTests =
-        upcomingTestsElement.value.trim();
-
-
-    const availableStudyTime =
-        Number(
-            availableTimeElement.value
-        );
-
-
-    const breakInterval =
-        Number(
-            breakIntervalElement.value
-        );
-
-
-    const difficultTopics =
-        difficultTopicsElement.value.trim();
-
-
-    const studyDepth =
-        studyDepthElement.value;
-
-
-    const sleepReminder =
-        sleepReminderElement.value;
-
-
-    /*
-     * Validation
-     */
-
-    if (!subjects) {
-
-        showToast(
-            "Enter your subjects."
-        );
-
-        subjectsElement.focus();
-
-        return;
-
-    }
-
-
-    if (!upcomingTests) {
-
-        showToast(
-            "Enter your upcoming tests."
-        );
-
-        upcomingTestsElement.focus();
-
-        return;
-
-    }
-
-
-    if (
-        !availableStudyTime ||
-        availableStudyTime <= 0
-    ) {
-
-        showToast(
-            "Enter your available study time."
-        );
-
-        availableTimeElement.focus();
-
-        return;
-
-    }
-
-
-    if (
-        !breakInterval ||
-        breakInterval < 5
-    ) {
-
-        showToast(
-            "Break interval must be at least 5 minutes."
-        );
-
-        breakIntervalElement.focus();
-
-        return;
-
-    }
-
-
-    /*
-     * Loading state
-     */
-
-    if (button) {
-
-        button.disabled = true;
-
-        button.textContent =
-            "🧠 Creating plan...";
-
-    }
-
-
-    if (result) {
-
-        result.classList.remove(
-            "hidden"
-        );
-
-    }
-
-
-    if (output) {
-
-        output.textContent =
-            "Velora is building your study plan...";
-
-    }
-
-
-    try {
-
-        /*
-         * Send the form to n8n
-         */
-
-        const response =
-            await fetch(
-                API.createPlan,
-                {
-                    method: "POST",
-
-                    headers: {
-                        "Content-Type":
-                            "application/json"
-                    },
-
-                    body: JSON.stringify({
-
-                        subjects:
-                            subjects,
-
-                        upcoming_tests:
-                            upcomingTests,
-
-                        available_study_time:
-                            availableStudyTime,
-
-                        break_interval:
-                            breakInterval,
-
-                        difficult_topics:
-                            difficultTopics,
-
-                        study_depth:
-                            studyDepth,
-
-                        sleep_reminder:
-                            sleepReminder
-
-                    })
-                }
-            );
-
-
-        /*
-         * HTTP error
-         */
-
-        if (!response.ok) {
-
-            throw new Error(
-                `n8n returned HTTP ${response.status}`
-            );
-
-        }
-
-
-        /*
-         * Read n8n response
-         */
-
-        const data =
-            await response.json();
-
-
-        console.log(
-            "Velora n8n response:",
-            data
-        );
-
-
-        /*
-         * Find the actual study-plan output.
-         *
-         * Respond to Webhook can return:
-         *
-         * {
-         *     plan: "..."
-         * }
-         *
-         * or:
-         *
-         * {
-         *     output: "..."
-         * }
-         */
-
-        let aiOutput;
-
-
-        if (
-            data &&
-            typeof data.plan === "string"
-        ) {
-
-            aiOutput =
-                data.plan;
-
-        }
-
-        else if (
-            data &&
-            typeof data.output === "string"
-        ) {
-
-            aiOutput =
-                data.output;
-
-        }
-
-        else if (
-            data &&
-            typeof data.answer === "string"
-        ) {
-
-            aiOutput =
-                data.answer;
-
-        }
-
-        else if (
-            data &&
-            typeof data.message === "string"
-        ) {
-
-            aiOutput =
-                data.message;
-
-        }
-
-        else {
-
-            /*
-             * Last resort:
-             * display returned JSON.
-             */
-
-            aiOutput =
-                JSON.stringify(
-                    data,
-                    null,
-                    2
-                );
-
-        }
-
-
-        /*
-         * Display study plan
-         */
-
-        if (output) {
-
-            output.textContent =
-                cleanPlanOutput(
-                    aiOutput
-                );
-
-        }
-
-
-        if (result) {
-
-            result.classList.remove(
-                "hidden"
-            );
-
-        }
-
-
-        showToast(
-            "Study plan created! ✓"
-        );
-
-
-        /*
-         * If a task endpoint exists,
-         * refresh the dashboard.
-         */
-
-        if (API.getTasks) {
-
-            await loadTasks();
-
-        }
-
-    }
-
-
-    catch (error) {
-
-        console.error(
-            "Velora planner error:",
-            error
-        );
-
-
-        if (output) {
-
-            output.textContent =
-                "The study plan could not be created.";
-
-        }
-
-
-        showToast(
-            "Study planner failed."
-        );
-
-    }
-
-
-    finally {
-
-        if (button) {
-
-            button.disabled = false;
-
-            button.textContent =
-                "🧠 Generate Study Plan";
-
-        }
-
-    }
-
-}
-
-
-/* =========================================================
-   CLEAN AI OUTPUT
-========================================================= */
-
-function cleanPlanOutput(value) {
-
-    if (
-        value === undefined ||
-        value === null
-    ) {
-
-        return "No study plan was returned.";
-
-    }
-
-
-    /*
-     * If n8n somehow sends an object,
-     * format it nicely.
-     */
-
-    if (
-        typeof value === "object"
-    ) {
-
-        return JSON.stringify(
-            value,
-            null,
-            2
-        );
-
-    }
-
-
-    let text =
-        String(value);
-
-
-    /*
-     * Remove accidental surrounding quotes.
-     */
-
-    if (
-        text.startsWith('"') &&
-        text.endsWith('"')
-    ) {
-
-        try {
-
-            text =
-                JSON.parse(text);
-
-        }
-
-        catch {
-
-            text =
-                text.slice(
-                    1,
-                    -1
-                );
-
-        }
-
-    }
-
-
-    /*
-     * Convert escaped newlines
-     * into actual newlines.
-     */
-
-    text =
-        text.replaceAll(
-            "\\n",
-            "\n"
-        );
-
-
-    /*
-     * Convert escaped quotes.
-     */
-
-    text =
-        text.replaceAll(
-            '\\"',
-            '"'
-        );
-
-
-    return text.trim();
-
-}
-
-
-/* =========================================================
-   LOAD TASKS
-========================================================= */
-
-async function loadTasks() {
-
-    if (!API.getTasks) {
-
-        tasks = [];
-
-        updateStatistics();
-
-        renderDashboardTasks();
-
-        renderTasks();
-
-        return;
-
-    }
-
-
-    const dashboardList =
-        document.getElementById(
-            "dashboard-task-list"
-        );
-
-
-    const taskList =
-        document.getElementById(
-            "full-task-list"
-        );
-
-
-    if (dashboardList) {
-
-        dashboardList.innerHTML =
-            `
-                <div class="loading">
-                    Loading tasks...
-                </div>
-            `;
-
-    }
-
-
-    if (taskList) {
-
-        taskList.innerHTML =
-            `
-                <div class="loading">
-                    Loading tasks...
-                </div>
-            `;
-
-    }
-
-
-    try {
-
-        const response =
-            await fetch(
-                API.getTasks,
-                {
-                    method: "GET"
-                }
-            );
-
-
-        if (!response.ok) {
-
-            throw new Error(
-                `n8n returned HTTP ${response.status}`
-            );
-
-        }
-
-
-        const data =
-            await response.json();
-
-
-        /*
-         * Support several response structures.
-         */
-
-        if (Array.isArray(data)) {
-
-            tasks =
-                data;
-
-        }
-
-        else if (
-            data &&
-            Array.isArray(data.tasks)
-        ) {
-
-            tasks =
-                data.tasks;
-
-        }
-
-        else if (
-            data &&
-            Array.isArray(data.data)
-        ) {
-
-            tasks =
-                data.data;
-
-        }
-
-        else {
-
-            tasks =
-                [];
-
-        }
-
-
-        updateStatistics();
-
-        renderDashboardTasks();
-
-        renderTasks();
-
-    }
-
-
-    catch (error) {
-
-        console.error(
-            "Velora task loading error:",
-            error
-        );
-
-
-        tasks =
-            [];
-
-
-        if (dashboardList) {
-
-            dashboardList.innerHTML =
-                `
-                    <div class="empty-state">
-                        Could not load tasks.
-                    </div>
-                `;
-
-        }
-
-
-        if (taskList) {
-
-            taskList.innerHTML =
-                `
-                    <div class="empty-state">
-                        Could not load tasks.
-                    </div>
-                `;
-
-        }
-
-
-        showToast(
-            "Could not load tasks."
-        );
-
-    }
-
-}
-
-
-/* =========================================================
-   UPDATE STATISTICS
-========================================================= */
-
-function updateStatistics() {
-
-    const total =
-        tasks.length;
-
-
-    const completed =
-        tasks.filter(
-            task =>
-                String(
-                    task.status || ""
-                ).toLowerCase() ===
-                "completed"
-        ).length;
-
-
-    const pending =
-        tasks.filter(
-            task =>
-                String(
-                    task.status || ""
-                ).toLowerCase() !==
-                "completed"
-        ).length;
-
-
-    const progress =
-        total === 0
-            ? 0
-            : Math.round(
-                (
-                    completed /
-                    total
-                ) * 100
-            );
-
-
-    const totalElement =
-        document.getElementById(
-            "total-tasks"
-        );
-
-
-    const completedElement =
-        document.getElementById(
-            "completed-tasks"
-        );
-
-
-    const pendingElement =
-        document.getElementById(
-            "pending-tasks"
-        );
-
-
-    const progressElement =
-        document.getElementById(
-            "progress-percent"
-        );
-
+    const progressPercent =
+        document.getElementById("progress-percent");
 
     const progressLabel =
-        document.getElementById(
-            "progress-label"
-        );
-
+        document.getElementById("progress-label");
 
     const progressFill =
-        document.getElementById(
-            "progress-fill"
-        );
+        document.getElementById("progress-fill");
 
 
-    if (totalElement) {
+    /*
+        Keep dashboard at zero until the
+        reminder/task endpoint is connected.
+    */
 
-        totalElement.textContent =
-            total;
+    const total = 0;
+    const completed = 0;
+    const pending = 0;
+    const progress = 0;
 
+
+    if (totalTasks) {
+        totalTasks.textContent = total;
     }
 
-
-    if (completedElement) {
-
-        completedElement.textContent =
-            completed;
-
+    if (completedTasks) {
+        completedTasks.textContent = completed;
     }
 
-
-    if (pendingElement) {
-
-        pendingElement.textContent =
-            pending;
-
+    if (pendingTasks) {
+        pendingTasks.textContent = pending;
     }
 
-
-    if (progressElement) {
-
-        progressElement.textContent =
+    if (progressPercent) {
+        progressPercent.textContent =
             `${progress}%`;
-
     }
-
 
     if (progressLabel) {
-
         progressLabel.textContent =
             `${progress}%`;
-
     }
-
 
     if (progressFill) {
-
         progressFill.style.width =
             `${progress}%`;
-
     }
 
 }
 
 
-/* =========================================================
-   DASHBOARD TASKS
-========================================================= */
-
-function renderDashboardTasks() {
-
-    const container =
-        document.getElementById(
-            "dashboard-task-list"
-        );
-
-
-    if (!container) {
-        return;
-    }
-
-
-    if (tasks.length === 0) {
-
-        container.innerHTML =
-            `
-                <div class="empty-state">
-                    No study tasks yet.
-                    Generate a study plan to get started.
-                </div>
-            `;
-
-        return;
-
-    }
-
-
-    const visibleTasks =
-        tasks.slice(
-            0,
-            6
-        );
-
-
-    container.innerHTML =
-        visibleTasks
-            .map(
-                task =>
-                    createTaskCard(task)
-            )
-            .join("");
-
-}
-
-
-/* =========================================================
-   FULL TASK PAGE
-========================================================= */
-
-function renderTasks() {
-
-    const container =
-        document.getElementById(
-            "full-task-list"
-        );
-
-
-    if (!container) {
-        return;
-    }
-
-
-    if (tasks.length === 0) {
-
-        container.innerHTML =
-            `
-                <div class="empty-state">
-                    No tasks yet.
-                </div>
-            `;
-
-        return;
-
-    }
-
-
-    container.innerHTML =
-        tasks
-            .map(
-                task =>
-                    createTaskCard(task)
-            )
-            .join("");
-
-}
-
-
-/* =========================================================
-   CREATE TASK CARD
-========================================================= */
-
-function createTaskCard(task) {
-
-    /*
-     * n8n Data Table provides its own
-     * system ID.
-     */
-
-    const id =
-        task.id ??
-        task.ID ??
-        task._id ??
-        task.rowId;
-
-
-    const subject =
-        escapeHTML(
-            task.subject ||
-            "General"
-        );
-
-
-    const topic =
-        escapeHTML(
-            task.topic ||
-            ""
-        );
-
-
-    const title =
-        escapeHTML(
-            task.task ||
-            task.title ||
-            "Study Task"
-        );
-
-
-    const priority =
-        String(
-            task.priority ||
-            "Medium"
-        );
-
-
-    const status =
-        String(
-            task.status ||
-            "Pending"
-        );
-
-
-    const duration =
-        Number(
-            task.duration ||
-            task.minutes ||
-            0
-        );
-
-
-    const deadline =
-        escapeHTML(
-            task.deadline ||
-            "No deadline"
-        );
-
-
-    const scheduledDate =
-        escapeHTML(
-            task.scheduled_date ||
-            task.date ||
-            ""
-        );
-
-
-    const priorityClass =
-        priority
-            .toLowerCase();
-
-
-    const statusClass =
-        status
-            .toLowerCase();
-
-
-    const completed =
-        statusClass ===
-        "completed";
-
-
-    /*
-     * Only show Complete if
-     * we actually have an ID and
-     * a completion endpoint.
-     */
-
-    const showCompleteButton =
-        !completed &&
-        id !== undefined &&
-        id !== null &&
-        API.completeTask;
-
-
-    return `
-        <div class="task-card">
-
-            <div class="task-main">
-
-                <div class="task-subject">
-                    ${subject}
-                </div>
-
-                <div class="task-title">
-                    ${title}
-                </div>
-
-                ${
-                    topic
-                        ? `
-                            <div class="task-topic">
-                                ${topic}
-                            </div>
-                        `
-                        : ""
-                }
-
-                <div class="task-meta">
-
-                    <span
-                        class="badge ${priorityClass}"
-                    >
-                        ${escapeHTML(priority)}
-                    </span>
-
-                    <span class="badge">
-                        ${duration} min
-                    </span>
-
-                    <span class="badge">
-                        Deadline:
-                        ${deadline}
-                    </span>
-
-                    ${
-                        scheduledDate
-                            ? `
-                                <span class="badge">
-                                    📅
-                                    ${scheduledDate}
-                                </span>
-                            `
-                            : ""
-                    }
-
-                    <span
-                        class="badge ${statusClass}"
-                    >
-                        ${escapeHTML(status)}
-                    </span>
-
-                </div>
-
-            </div>
-
-
-            ${
-                showCompleteButton
-                    ? `
-                        <button
-                            class="complete-button"
-                            data-task-id="${escapeHTML(id)}"
-                        >
-                            ✓ Complete
-                        </button>
-                    `
-                    : ""
-            }
-
-        </div>
-    `;
-
-}
-
-
-/* =========================================================
-   COMPLETE TASK BUTTON HANDLER
-========================================================= */
+/* =========================================
+   INITIALIZE
+========================================= */
 
 document.addEventListener(
-    "click",
-    event => {
+    "DOMContentLoaded",
+    () => {
 
-        const button =
-            event.target.closest(
-                ".complete-button"
-            );
+        updateDashboard();
 
+        /*
+            Start on dashboard.
+        */
 
-        if (!button) {
-            return;
-        }
-
-
-        const id =
-            button.dataset.taskId;
-
-
-        completeTask(id);
+        showPage("dashboard");
 
     }
 );
-
-
-/* =========================================================
-   COMPLETE TASK
-========================================================= */
-
-async function completeTask(id) {
-
-    if (!API.completeTask) {
-
-        showToast(
-            "Task completion endpoint is not configured yet."
-        );
-
-        return;
-
-    }
-
-
-    if (
-        id === undefined ||
-        id === null ||
-        id === "" ||
-        id === "undefined"
-    ) {
-
-        showToast(
-            "This task does not have a valid ID."
-        );
-
-        return;
-
-    }
-
-
-    try {
-
-        const response =
-            await fetch(
-                API.completeTask,
-                {
-                    method: "POST",
-
-                    headers: {
-                        "Content-Type":
-                            "application/json"
-                    },
-
-                    body: JSON.stringify({
-                        id: id
-                    })
-                }
-            );
-
-
-        if (!response.ok) {
-
-            throw new Error(
-                `n8n returned HTTP ${response.status}`
-            );
-
-        }
-
-
-        showToast(
-            "Task completed ✓"
-        );
-
-
-        await loadTasks();
-
-    }
-
-
-    catch (error) {
-
-        console.error(
-            "Velora complete-task error:",
-            error
-        );
-
-
-        showToast(
-            "Could not complete task."
-        );
-
-    }
-
-}
-
-
-/* =========================================================
-   TOAST
-========================================================= */
-
-function showToast(message) {
-
-    const toast =
-        document.getElementById(
-            "toast"
-        );
-
-
-    if (!toast) {
-        return;
-    }
-
-
-    toast.textContent =
-        message;
-
-
-    toast.classList.add(
-        "show"
-    );
-
-
-    clearTimeout(
-        toastTimer
-    );
-
-
-    toastTimer =
-        setTimeout(
-            () => {
-
-                toast.classList.remove(
-                    "show"
-                );
-
-            },
-            3000
-        );
-
-}
-
-
-/* =========================================================
-   HTML ESCAPING
-========================================================= */
-
-function escapeHTML(value) {
-
-    return String(value)
-
-        .replaceAll(
-            "&",
-            "&amp;"
-        )
-
-        .replaceAll(
-            "<",
-            "&lt;"
-        )
-
-        .replaceAll(
-            ">",
-            "&gt;"
-        )
-
-        .replaceAll(
-            '"',
-            "&quot;"
-        )
-
-        .replaceAll(
-            "'",
-            "&#039;"
-        );
-
-}
