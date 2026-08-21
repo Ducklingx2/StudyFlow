@@ -146,7 +146,6 @@ function setupNavigation() {
 
 }
 
-
 /* =========================================================
    PLANNER FORM
 ========================================================= */
@@ -164,13 +163,14 @@ function setupPlannerForm() {
 
             event.preventDefault();
 
+            await setupNotifications();
+
             await generatePlan();
 
         }
     );
 
 }
-
 
 /* =========================================================
    GENERATE STUDY PLAN
@@ -856,26 +856,84 @@ function createTaskCard(task) {
 
 /* =========================================================
    NOTIFICATIONS
-======================================================== */
+========================================================= */
 
 async function setupNotifications() {
+
     if (!("Notification" in window)) {
+
+        console.warn(
+            "This browser does not support notifications."
+        );
+
         return false;
     }
 
+
     if (Notification.permission === "granted") {
+
+        console.log(
+            "Velora notifications already enabled."
+        );
+
         return true;
     }
 
+
     if (Notification.permission === "denied") {
+
+        console.warn(
+            "Velora notifications are blocked."
+        );
+
         return false;
     }
 
-    const permission = await Notification.requestPermission();
 
-    return permission === "granted";
+    try {
 
-    const notificationsEnabled = await setupNotifications();
+        const permission =
+            await Notification.requestPermission();
+
+        console.log(
+            "Velora notification permission:",
+            permission
+        );
+
+        return permission === "granted";
+
+    } catch (error) {
+
+        console.error(
+            "Notification permission error:",
+            error
+        );
+
+        return false;
+
+    }
+
+}
+
+
+function showNotification(title, message) {
+
+    if (
+        !("Notification" in window) ||
+        Notification.permission !== "granted"
+    ) {
+        return;
+    }
+
+
+    new Notification(
+        title,
+        {
+            body: message,
+            icon: "assets/velorafavicon.png"
+        }
+    );
+
 }
 
 /* =========================================================
