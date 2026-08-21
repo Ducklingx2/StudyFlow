@@ -29,9 +29,9 @@
 <body>
 
 
-    <!-- =====================================================
+    <!-- =========================
          SIDEBAR
-    ====================================================== -->
+    ========================== -->
 
     <aside class="sidebar">
 
@@ -45,7 +45,6 @@
                 >
 
             </div>
-
 
             <div>
 
@@ -62,19 +61,13 @@
 
         <nav class="navigation">
 
-
             <button
                 class="nav-button active"
                 data-page="dashboard"
                 type="button"
             >
-
                 <span>📊</span>
-
-                <span>
-                    Dashboard
-                </span>
-
+                <span>Dashboard</span>
             </button>
 
 
@@ -83,13 +76,8 @@
                 data-page="planner"
                 type="button"
             >
-
                 <span>🧠</span>
-
-                <span>
-                    AI Planner
-                </span>
-
+                <span>AI Planner</span>
             </button>
 
 
@@ -98,45 +86,36 @@
                 data-page="tasks"
                 type="button"
             >
-
                 <span>✓</span>
-
-                <span>
-                    Tasks
-                </span>
-
+                <span>Tasks</span>
             </button>
-
 
         </nav>
 
 
         <div class="sidebar-footer">
-
             VELORA AI
-
         </div>
 
     </aside>
 
 
 
-    <!-- =====================================================
+    <!-- =========================
          MAIN CONTENT
-    ====================================================== -->
+    ========================== -->
 
     <main class="main-content">
 
 
-        <!-- =================================================
+        <!-- =========================
              DASHBOARD
-        ================================================== -->
+        ========================== -->
 
         <section
             id="dashboard-page"
             class="page active"
         >
-
 
             <header class="page-header">
 
@@ -146,11 +125,9 @@
                         STUDY OVERVIEW
                     </p>
 
-
                     <h2>
                         Dashboard
                     </h2>
-
 
                     <p class="subtitle">
                         Here's how your studying is going.
@@ -162,9 +139,7 @@
 
 
 
-            <!-- =============================================
-                 STATISTICS
-            ============================================== -->
+            <!-- STATISTICS -->
 
             <div class="stats-grid">
 
@@ -175,13 +150,11 @@
                         📚
                     </div>
 
-
                     <div>
 
                         <p>
                             Total Tasks
                         </p>
-
 
                         <h3 id="total-tasks">
                             0
@@ -199,13 +172,11 @@
                         ✓
                     </div>
 
-
                     <div>
 
                         <p>
                             Completed
                         </p>
-
 
                         <h3 id="completed-tasks">
                             0
@@ -223,13 +194,11 @@
                         ⏳
                     </div>
 
-
                     <div>
 
                         <p>
                             Pending
                         </p>
-
 
                         <h3 id="pending-tasks">
                             0
@@ -247,13 +216,11 @@
                         📈
                     </div>
 
-
                     <div>
 
                         <p>
                             Progress
                         </p>
-
 
                         <h3 id="progress-percent">
                             0%
@@ -263,17 +230,13 @@
 
                 </div>
 
-
             </div>
 
 
 
-            <!-- =============================================
-                 PROGRESS
-            ============================================== -->
+            <!-- PROGRESS -->
 
             <div class="panel">
-
 
                 <div class="panel-heading">
 
@@ -283,13 +246,11 @@
                             Overall Progress
                         </h3>
 
-
                         <p>
                             Your completed study tasks.
                         </p>
 
                     </div>
-
 
                     <strong id="progress-label">
                         0%
@@ -307,17 +268,13 @@
 
                 </div>
 
-
             </div>
 
 
 
-            <!-- =============================================
-                 DASHBOARD TASKS
-            ============================================== -->
+            <!-- CURRENT TASKS -->
 
             <div class="panel">
-
 
                 <div class="panel-heading">
 
@@ -326,7 +283,6 @@
                         <h3>
                             Current Tasks
                         </h3>
-
 
                         <p>
                             Your upcoming study work.
@@ -337,16 +293,13 @@
                 </div>
 
 
-                <div
-                    id="dashboard-task-list"
-                >
+                <div id="dashboard-task-list">
 
                     <div class="loading">
                         Loading tasks...
                     </div>
 
                 </div>
-
 
             </div>
 
@@ -355,9 +308,9 @@
 
 
 
-        <!-- =================================================
+        <!-- =========================
              AI PLANNER
-        ================================================== -->
+        ========================== -->
 
         <section
             id="planner-page"
@@ -373,11 +326,9 @@
                         AI PLANNER
                     </p>
 
-
                     <h2>
                         Create a Study Plan
                     </h2>
-
 
                     <p class="subtitle">
                         Give Velora your workload and let it organize it.
@@ -389,9 +340,9 @@
 
 
 
-            <!-- =============================================
+            <!-- =========================
                  PLANNER FORM
-            ============================================== -->
+            ========================== -->
 
             <form
                 id="planner-form"
@@ -406,7 +357,6 @@
                     <label for="subjects">
                         Subjects
                     </label>
-
 
                     <textarea
                         id="subjects"
@@ -428,11 +378,10 @@ English"
                         Upcoming Tests
                     </label>
 
-
                     <textarea
                         id="upcoming-tests"
-                        placeholder="Maths - 20 August
-Science - 23 August"
+                        placeholder="Maths - 25 August
+Science - 28 August"
                         required
                     ></textarea>
 
@@ -440,7 +389,7 @@ Science - 23 August"
 
 
 
-                <!-- TIME + BREAK -->
+                <!-- AVAILABLE TIME + BREAK -->
 
                 <div class="form-row">
 
@@ -458,10 +407,9 @@ Science - 23 August"
                                 id="available-study-time"
                                 type="number"
                                 min="1"
-                                placeholder="60"
+                                placeholder="120"
                                 required
                             >
-
 
                             <span>
                                 minutes/day
@@ -490,7 +438,6 @@ Science - 23 August"
                                 required
                             >
 
-
                             <span>
                                 minutes
                             </span>
@@ -504,9 +451,26 @@ Science - 23 August"
 
 
 
-                <!-- STUDY DEPTH + SLEEP -->
+                <!-- START TIME + STUDY DEPTH -->
 
                 <div class="form-row">
+
+
+                    <div class="form-group">
+
+                        <label for="study-start">
+                            Start Studying
+                        </label>
+
+
+                        <input
+                            id="study-start"
+                            type="datetime-local"
+                            required
+                        >
+
+                    </div>
+
 
 
                     <div class="form-group">
@@ -525,14 +489,12 @@ Science - 23 August"
                                 Light - Review & key concepts
                             </option>
 
-
                             <option
                                 value="medium"
                                 selected
                             >
                                 Medium - Concepts + practice
                             </option>
-
 
                             <option value="deep">
                                 Deep - Mastery + lots of practice
@@ -542,6 +504,14 @@ Science - 23 August"
 
                     </div>
 
+
+                </div>
+
+
+
+                <!-- SLEEP REMINDER -->
+
+                <div class="form-row">
 
 
                     <div class="form-group">
@@ -559,7 +529,6 @@ Science - 23 August"
                             <option value="no">
                                 No sleep reminder
                             </option>
-
 
                             <option value="yes">
                                 Yes, remind me to wind down
@@ -611,15 +580,14 @@ Chemical Equilibrium"
 
 
 
-            <!-- =============================================
+            <!-- =========================
                  AI RESULT
-            ============================================== -->
+            ========================== -->
 
             <div
                 id="planner-result"
                 class="panel planner-result hidden"
             >
-
 
                 <div class="panel-heading">
 
@@ -628,7 +596,6 @@ Chemical Equilibrium"
                         <h3>
                             Your Study Plan
                         </h3>
-
 
                         <p>
                             Generated by Velora.
@@ -644,7 +611,6 @@ Chemical Equilibrium"
                     class="planner-output"
                 ></div>
 
-
             </div>
 
 
@@ -652,9 +618,9 @@ Chemical Equilibrium"
 
 
 
-        <!-- =================================================
+        <!-- =========================
              TASKS
-        ================================================== -->
+        ========================== -->
 
         <section
             id="tasks-page"
@@ -670,11 +636,9 @@ Chemical Equilibrium"
                         TASK MANAGEMENT
                     </p>
 
-
                     <h2>
                         Tasks
                     </h2>
-
 
                     <p class="subtitle">
                         Manage your study schedule.
@@ -705,9 +669,9 @@ Chemical Equilibrium"
 
 
 
-    <!-- =====================================================
+    <!-- =========================
          TOAST
-    ====================================================== -->
+    ========================== -->
 
     <div
         id="toast"
@@ -716,9 +680,9 @@ Chemical Equilibrium"
 
 
 
-    <!-- =====================================================
+    <!-- =========================
          JAVASCRIPT
-    ====================================================== -->
+    ========================== -->
 
     <script src="app.js"></script>
 
