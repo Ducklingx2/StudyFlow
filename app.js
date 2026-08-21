@@ -874,6 +874,8 @@ async function setupNotifications() {
     const permission = await Notification.requestPermission();
 
     return permission === "granted";
+
+    const notificationsEnabled = await setupNotifications();
 }
 
 /* =========================================================
@@ -906,7 +908,6 @@ function showToast(message) {
 
 }
 
-const notificationsEnabled = await setupNotifications();
 /* =========================================================
    HTML ESCAPING
 ========================================================= */
