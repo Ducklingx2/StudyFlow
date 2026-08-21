@@ -2,6 +2,7 @@
 <html lang="en">
 
 <head>
+
     <meta charset="UTF-8">
 
     <meta
@@ -11,99 +12,162 @@
 
     <title>Velora</title>
 
-    <link rel="icon" type="image/png" href="assets/velorafavicon.png">
+    <link
+        rel="icon"
+        type="image/png"
+        href="assets/velorafavicon.png"
+    >
 
-    <link rel="stylesheet" href="style.css">
+    <link
+        rel="stylesheet"
+        href="style.css"
+    >
+
 </head>
+
 
 <body>
 
-    <!-- =========================
+
+    <!-- =====================================================
          SIDEBAR
-    ========================== -->
+    ====================================================== -->
 
     <aside class="sidebar">
 
         <div class="brand">
-            <div class="brand-icon"><img src = "assets/Velora.png"></div>
+
+            <div class="brand-icon">
+
+                <img
+                    src="assets/Velora.png"
+                    alt="Velora"
+                >
+
+            </div>
+
 
             <div>
+
                 <h1>Velora</h1>
-                <p>AI that keeps you moving.</p>
+
+                <p>
+                    AI that keeps you moving.
+                </p>
+
             </div>
+
         </div>
 
+
         <nav class="navigation">
+
 
             <button
                 class="nav-button active"
                 data-page="dashboard"
+                type="button"
             >
+
                 <span>📊</span>
-                <span>Dashboard</span>
+
+                <span>
+                    Dashboard
+                </span>
+
             </button>
+
 
             <button
                 class="nav-button"
                 data-page="planner"
+                type="button"
             >
+
                 <span>🧠</span>
-                <span>AI Planner</span>
+
+                <span>
+                    AI Planner
+                </span>
+
             </button>
+
 
             <button
                 class="nav-button"
                 data-page="tasks"
+                type="button"
             >
+
                 <span>✓</span>
-                <span>Tasks</span>
+
+                <span>
+                    Tasks
+                </span>
+
             </button>
+
 
         </nav>
 
+
         <div class="sidebar-footer">
+
             VELORA AI
+
         </div>
 
     </aside>
 
 
-    <!-- =========================
+
+    <!-- =====================================================
          MAIN CONTENT
-    ========================== -->
+    ====================================================== -->
 
     <main class="main-content">
 
 
-        <!-- =========================
+        <!-- =================================================
              DASHBOARD
-        ========================== -->
+        ================================================== -->
 
         <section
             id="dashboard-page"
             class="page active"
         >
 
+
             <header class="page-header">
 
                 <div>
+
                     <p class="eyebrow">
                         STUDY OVERVIEW
                     </p>
 
-                    <h2>Dashboard</h2>
+
+                    <h2>
+                        Dashboard
+                    </h2>
+
 
                     <p class="subtitle">
                         Here's how your studying is going.
                     </p>
+
                 </div>
 
             </header>
 
 
-            <!-- STATISTICS -->
+
+            <!-- =============================================
+                 STATISTICS
+            ============================================== -->
 
             <div class="stats-grid">
+
 
                 <div class="stat-card">
 
@@ -111,12 +175,22 @@
                         📚
                     </div>
 
+
                     <div>
-                        <p>Total Tasks</p>
-                        <h3 id="total-tasks">0</h3>
+
+                        <p>
+                            Total Tasks
+                        </p>
+
+
+                        <h3 id="total-tasks">
+                            0
+                        </h3>
+
                     </div>
 
                 </div>
+
 
 
                 <div class="stat-card">
@@ -125,12 +199,22 @@
                         ✓
                     </div>
 
+
                     <div>
-                        <p>Completed</p>
-                        <h3 id="completed-tasks">0</h3>
+
+                        <p>
+                            Completed
+                        </p>
+
+
+                        <h3 id="completed-tasks">
+                            0
+                        </h3>
+
                     </div>
 
                 </div>
+
 
 
                 <div class="stat-card">
@@ -139,12 +223,22 @@
                         ⏳
                     </div>
 
+
                     <div>
-                        <p>Pending</p>
-                        <h3 id="pending-tasks">0</h3>
+
+                        <p>
+                            Pending
+                        </p>
+
+
+                        <h3 id="pending-tasks">
+                            0
+                        </h3>
+
                     </div>
 
                 </div>
+
 
 
                 <div class="stat-card">
@@ -153,35 +247,56 @@
                         📈
                     </div>
 
+
                     <div>
-                        <p>Progress</p>
-                        <h3 id="progress-percent">0%</h3>
+
+                        <p>
+                            Progress
+                        </p>
+
+
+                        <h3 id="progress-percent">
+                            0%
+                        </h3>
+
                     </div>
 
                 </div>
 
+
             </div>
 
 
-            <!-- PROGRESS -->
+
+            <!-- =============================================
+                 PROGRESS
+            ============================================== -->
 
             <div class="panel">
+
 
                 <div class="panel-heading">
 
                     <div>
-                        <h3>Overall Progress</h3>
+
+                        <h3>
+                            Overall Progress
+                        </h3>
+
 
                         <p>
                             Your completed study tasks.
                         </p>
+
                     </div>
+
 
                     <strong id="progress-label">
                         0%
                     </strong>
 
                 </div>
+
 
                 <div class="progress-container">
 
@@ -192,26 +307,39 @@
 
                 </div>
 
+
             </div>
 
 
-            <!-- TASKS -->
+
+            <!-- =============================================
+                 DASHBOARD TASKS
+            ============================================== -->
 
             <div class="panel">
+
 
                 <div class="panel-heading">
 
                     <div>
-                        <h3>Current Tasks</h3>
+
+                        <h3>
+                            Current Tasks
+                        </h3>
+
 
                         <p>
                             Your upcoming study work.
                         </p>
+
                     </div>
 
                 </div>
 
-                <div id="dashboard-task-list">
+
+                <div
+                    id="dashboard-task-list"
+                >
 
                     <div class="loading">
                         Loading tasks...
@@ -219,19 +347,23 @@
 
                 </div>
 
+
             </div>
+
 
         </section>
 
 
-        <!-- =========================
+
+        <!-- =================================================
              AI PLANNER
-        ========================== -->
+        ================================================== -->
 
         <section
             id="planner-page"
             class="page"
         >
+
 
             <header class="page-header">
 
@@ -241,7 +373,11 @@
                         AI PLANNER
                     </p>
 
-                    <h2>Create a Study Plan</h2>
+
+                    <h2>
+                        Create a Study Plan
+                    </h2>
+
 
                     <p class="subtitle">
                         Give Velora your workload and let it organize it.
@@ -252,16 +388,25 @@
             </header>
 
 
+
+            <!-- =============================================
+                 PLANNER FORM
+            ============================================== -->
+
             <form
                 id="planner-form"
                 class="planner-form"
             >
+
+
+                <!-- SUBJECTS -->
 
                 <div class="form-group">
 
                     <label for="subjects">
                         Subjects
                     </label>
+
 
                     <textarea
                         id="subjects"
@@ -274,11 +419,15 @@ English"
                 </div>
 
 
+
+                <!-- UPCOMING TESTS -->
+
                 <div class="form-group">
 
                     <label for="upcoming-tests">
                         Upcoming Tests
                     </label>
+
 
                     <textarea
                         id="upcoming-tests"
@@ -290,13 +439,18 @@ Science - 23 August"
                 </div>
 
 
+
+                <!-- TIME + BREAK -->
+
                 <div class="form-row">
+
 
                     <div class="form-group">
 
                         <label for="available-study-time">
                             Available Study Time
                         </label>
+
 
                         <div class="input-unit">
 
@@ -308,11 +462,15 @@ Science - 23 August"
                                 required
                             >
 
-                            <span>minutes/day</span>
+
+                            <span>
+                                minutes/day
+                            </span>
 
                         </div>
 
                     </div>
+
 
 
                     <div class="form-group">
@@ -320,6 +478,7 @@ Science - 23 August"
                         <label for="break-interval">
                             Break Interval
                         </label>
+
 
                         <div class="input-unit">
 
@@ -331,14 +490,91 @@ Science - 23 August"
                                 required
                             >
 
-                            <span>minutes</span>
+
+                            <span>
+                                minutes
+                            </span>
 
                         </div>
 
                     </div>
 
+
                 </div>
 
+
+
+                <!-- STUDY DEPTH + SLEEP -->
+
+                <div class="form-row">
+
+
+                    <div class="form-group">
+
+                        <label for="study-depth">
+                            How Deep Do You Want to Study?
+                        </label>
+
+
+                        <select
+                            id="study-depth"
+                            required
+                        >
+
+                            <option value="light">
+                                Light - Review & key concepts
+                            </option>
+
+
+                            <option
+                                value="medium"
+                                selected
+                            >
+                                Medium - Concepts + practice
+                            </option>
+
+
+                            <option value="deep">
+                                Deep - Mastery + lots of practice
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+
+                    <div class="form-group">
+
+                        <label for="sleep-reminder">
+                            Sleep Reminder
+                        </label>
+
+
+                        <select
+                            id="sleep-reminder"
+                            required
+                        >
+
+                            <option value="no">
+                                No sleep reminder
+                            </option>
+
+
+                            <option value="yes">
+                                Yes, remind me to wind down
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+                </div>
+
+
+
+                <!-- DIFFICULT TOPICS -->
 
                 <div class="form-group">
 
@@ -346,63 +582,85 @@ Science - 23 August"
                         Difficult Topics
                     </label>
 
+
                     <textarea
                         id="difficult-topics"
                         placeholder="Algebra
-Electricity"
+Electricity
+Chemical Equilibrium"
                     ></textarea>
 
                 </div>
 
+
+
+                <!-- GENERATE BUTTON -->
 
                 <button
                     id="generate-plan"
                     class="primary-button"
                     type="submit"
                 >
+
                     🧠 Generate Study Plan
+
                 </button>
+
 
             </form>
 
 
-            <!-- AI RESULT -->
+
+            <!-- =============================================
+                 AI RESULT
+            ============================================== -->
 
             <div
                 id="planner-result"
                 class="panel planner-result hidden"
             >
 
+
                 <div class="panel-heading">
 
                     <div>
-                        <h3>Your Study Plan</h3>
+
+                        <h3>
+                            Your Study Plan
+                        </h3>
+
 
                         <p>
                             Generated by Velora.
                         </p>
+
                     </div>
 
                 </div>
+
 
                 <div
                     id="planner-output"
                     class="planner-output"
                 ></div>
 
+
             </div>
+
 
         </section>
 
 
-        <!-- =========================
+
+        <!-- =================================================
              TASKS
-        ========================== -->
+        ================================================== -->
 
         <section
             id="tasks-page"
             class="page"
         >
+
 
             <header class="page-header">
 
@@ -412,7 +670,11 @@ Electricity"
                         TASK MANAGEMENT
                     </p>
 
-                    <h2>Tasks</h2>
+
+                    <h2>
+                        Tasks
+                    </h2>
+
 
                     <p class="subtitle">
                         Manage your study schedule.
@@ -421,6 +683,7 @@ Electricity"
                 </div>
 
             </header>
+
 
 
             <div
@@ -434,12 +697,17 @@ Electricity"
 
             </div>
 
+
         </section>
+
 
     </main>
 
 
-    <!-- TOAST -->
+
+    <!-- =====================================================
+         TOAST
+    ====================================================== -->
 
     <div
         id="toast"
@@ -447,7 +715,13 @@ Electricity"
     ></div>
 
 
+
+    <!-- =====================================================
+         JAVASCRIPT
+    ====================================================== -->
+
     <script src="app.js"></script>
+
 
 </body>
 
