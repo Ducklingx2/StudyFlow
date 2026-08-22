@@ -473,7 +473,7 @@ async function generatePlan() {
 
 async function loadTasks() {
 
-    if (!TASKS_WEBHOOK) {
+    if (!PLANNER_WEBHOOK) {
 
         return;
 
@@ -489,7 +489,7 @@ async function loadTasks() {
 
         const response =
             await fetch(
-                TASKS_WEBHOOK,
+                PLANNER_WEBHOOK,
                 {
                     method: "GET"
                 }
